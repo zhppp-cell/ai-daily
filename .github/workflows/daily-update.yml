@@ -8,10 +8,19 @@ on:
 permissions:
   contents: write
   models: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,3 +30,12 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: python 工具/每日更新.py
+      - name: 准备 Pages
+        uses: actions/configure-pages@v5
+      - name: 打包
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: 发布网站
+        id: deploy
+        uses: actions/deploy-pages@v4
