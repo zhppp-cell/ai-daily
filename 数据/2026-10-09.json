@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-09",
+  "sources": ["Hacker News", "TechCrunch", "arXiv cs.AI", "GitHub"],
+  "items": [
+    {"cat": "model", "title": "OpenAI 分享数学领域的 AI 进展", "url": "https://openai.com/index/sharing-ai-progress-in-mathematics/", "src": "OpenAI · Hacker News", "meta": "HN 热度 1307"},
+    {"cat": "model", "title": "Anthropic 发布 Claude Haiku 5.5", "url": "https://www.anthropic.com/claude-haiku-5-5", "src": "Anthropic · Hacker News", "meta": "HN 热度 993"},
+    {"cat": "model", "title": "OpenAI 发布 GPT-6：面向所有人的智能界面", "url": "https://openai.com/index/gpt-6-for-everyone/", "src": "OpenAI · Hacker News", "meta": "HN 热度 723"},
+    {"cat": "model", "title": "OpenAI 撤回三篇数学结果", "url": "https://github.com/openai/math/blob/main/history.md", "src": "GitHub · Hacker News", "meta": "HN 热度 335"},
+    {"cat": "tool", "title": "Docker 开源 Docker Agent", "url": "https://github.com/docker/docker-agent", "src": "GitHub", "meta": "HN 热度 282"},
+    {"cat": "tool", "title": "TypeScript 编译器、检查器与 LSP 的 Rust 移植（由 LLM 完成）", "url": "https://github.com/pingdotgg/ts-rust", "src": "GitHub", "meta": "HN 热度 97"},
+    {"cat": "tool", "title": "SamsungLabs 开源 LittleBit：亚 1-bit 的 LLM 压缩方案", "url": "https://github.com/SamsungLabs/LittleBit", "src": "GitHub", "meta": "HN 热度 33"},
+    {"cat": "paper", "title": "Long-WAM：扩展世界-动作模型的上下文长度", "url": "http://arxiv.org/abs/2610.10528v1", "src": "arXiv cs.AI", "meta": "2026-10-07"},
+    {"cat": "paper", "title": "RoboJEPA：扩展机器人潜在世界模型", "url": "http://arxiv.org/abs/2610.10515v1", "src": "arXiv cs.AI", "meta": "2026-10-07"},
+    {"cat": "paper", "title": "Decoupling Exploration from Optimization in RLVR", "url": "http://arxiv.org/abs/2610.10536v1", "src": "arXiv cs.AI", "meta": "2026-10-07"},
+    {"cat": "paper", "title": "A Society of Researchers：为自主科研智能体设计「制度」", "url": "http://arxiv.org/abs/2610.10468v1", "src": "arXiv cs.AI", "meta": "2026-10-07"},
+    {"cat": "paper", "title": "Before They Can Solve：从基座模型预测后训练代码智能体的表现", "url": "http://arxiv.org/abs/2610.10478v1", "src": "arXiv cs.AI", "meta": "2026-10-07"},
+    {"cat": "paper", "title": "RECAST：通过自适应证据路由计算合适的上下文", "url": "http://arxiv.org/abs/2610.10507v1", "src": "arXiv cs.AI", "meta": "2026-10-07"},
+    {"cat": "biz", "title": "中国团队 Manus 与 Meta 分拆后首轮融资超 5 亿美元", "url": "https://techcrunch.com/2026/10/08/chinas-manus-raises-over-500m-in-first-funding-round-since-split-with-meta/", "src": "TechCrunch", "meta": "2026-10-08"},
+    {"cat": "biz", "title": "Nous Research 确认 15 亿美元估值，面向企业推出 AI 智能体产品", "url": "https://techcrunch.com/2026/10/07/nous-research-confirms-it-hit-1-5b-valuation-launches-ai-agents-for-business-users/", "src": "TechCrunch", "meta": "2026-10-07"},
+    {"cat": "biz", "title": "Goodfire 推出「由内而外」的监控方案，低成本拦截失控的 AI 智能体", "url": "https://techcrunch.com/2026/10/08/goodfire-says-its-new-inside-out-monitors-catch-rogue-ai-agents-at-a-fraction-of-the-cost/", "src": "TechCrunch", "meta": "2026-10-08"},
+    {"cat": "biz", "title": "Google 推出本地优先的会议记录产品，对标 Granola", "url": "https://techcrunch.com/2026/10/08/google-releases-a-new-local-first-granola-competitor/", "src": "TechCrunch", "meta": "2026-10-08"},
+    {"cat": "biz", "title": "Natura 推出 99 美元智能戒指，把 AI 智能体戴在手上", "url": "https://techcrunch.com/2026/10/08/naturas-smart-ring-puts-ai-agents-on-your-finger/", "src": "TechCrunch", "meta": "2026-10-08"}
+  ]
+}

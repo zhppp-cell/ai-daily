@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 日报</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --text:#14181f; --muted:#6b7280;
+    --line:#e6e8ec; --accent:#2563eb; --chip:#eef2ff;
+    --c-model:#2563eb; --c-tool:#059669; --c-paper:#7c3aed; --c-biz:#d97706;
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 8px 24px rgba(16,24,40,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0d1117; --card:#161b22; --text:#e6edf3; --muted:#9198a1;
+      --line:#262c36; --accent:#58a6ff; --chip:#1f2937;
+      --c-model:#58a6ff; --c-tool:#3fb950; --c-paper:#a371f7; --c-biz:#d29922;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC","Hiragino Sans GB",sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:28px 18px 64px}
+  header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:22px}
+  .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  h1{font-size:26px;margin:0;letter-spacing:-.02em}
+  .date{color:var(--muted);font-size:14px}
+  .tagline{color:var(--muted);font-size:14px;margin-top:6px}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 8px}
+  .filters button{
+    border:1px solid var(--line);background:var(--card);color:var(--muted);
+    padding:6px 13px;border-radius:999px;font-size:13px;cursor:pointer;
+    font-family:inherit;transition:.15s;
+  }
+  .filters button:hover{color:var(--text);border-color:var(--muted)}
+  .filters button.on{background:var(--chip);color:var(--accent);border-color:transparent;font-weight:600}
+  section{margin-top:28px}
+  h2{font-size:15px;letter-spacing:.02em;color:var(--muted);margin:0 0 12px;font-weight:600;
+     display:flex;align-items:center;gap:8px;text-transform:uppercase}
+  h2::before{content:"";width:4px;height:15px;border-radius:2px;background:var(--accent)}
+  h2.model::before{background:var(--c-model)}
+  h2.tool::before{background:var(--c-tool)}
+  h2.paper::before{background:var(--c-paper)}
+  h2.biz::before{background:var(--c-biz)}
+  .item{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow);
+  }
+  .item a.title{
+    color:var(--text);text-decoration:none;font-weight:600;font-size:16px;
+    display:block;letter-spacing:-.01em;
+  }
+  .item a.title:hover{color:var(--accent);text-decoration:underline}
+  .item .sum{color:var(--text);opacity:.85;font-size:14.5px;margin-top:6px}
+  .item .meta{color:var(--muted);font-size:12.5px;margin-top:8px;display:flex;gap:10px;flex-wrap:wrap}
+  .badge{background:var(--chip);color:var(--accent);padding:1px 8px;border-radius:999px;font-weight:600}
+  .hero .item{border-left:4px solid var(--accent)}
+  footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  footer a{color:var(--muted)}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>AI 日报</h1>
+      <span class="date" id="date">2026-10-09</span>
+    </div>
+    <div class="tagline">每天自动汇总 AI 领域的模型、工具、论文与行业动态 · 共 <span id="count">0</span> 条</div>
+    <div class="filters" id="filters">
+      <button class="on" data-f="all">全部</button>
+      <button data-f="model">模型与产品</button>
+      <button data-f="tool">工具与开源</button>
+      <button data-f="paper">论文速览</button>
+      <button data-f="biz">行业与融资</button>
+    </div>
+  </header>
+  <div id="body"></div>
+  <footer>
+    数据来源：Hacker News、TechCrunch、arXiv、GitHub Trending 等公开渠道。
+    摘要由 Codex 依据原始标题整理，链接均为原文。
+    本页每日自动更新一次。
+  </footer>
+</div>
+<script>
+const DATA = {
+  date: "2026-10-09",
+  generated_at: "2026-10-09",
+  items: [
+    {cat:"model", title:"OpenAI 分享数学领域的 AI 进展", url:"https://openai.com/index/sharing-ai-progress-in-mathematics/", src:"OpenAI · Hacker News", meta:"HN 热度 1307"},
+    {cat:"model", title:"Anthropic 发布 Claude Haiku 5.5", url:"https://www.anthropic.com/claude-haiku-5-5", src:"Anthropic · Hacker News", meta:"HN 热度 993"},
+    {cat:"model", title:"OpenAI 发布 GPT-6：面向所有人的智能界面", url:"https://openai.com/index/gpt-6-for-everyone/", src:"OpenAI · Hacker News", meta:"HN 热度 723"},
+    {cat:"model", title:"OpenAI 撤回三篇数学结果", url:"https://github.com/openai/math/blob/main/history.md", src:"GitHub · Hacker News", meta:"HN 热度 335"},
+    {cat:"tool", title:"Docker 开源 Docker Agent", url:"https://github.com/docker/docker-agent", src:"GitHub", meta:"HN 热度 282"},
+    {cat:"tool", title:"TypeScript 编译器、检查器与 LSP 的 Rust 移植（由 LLM 完成）", url:"https://github.com/pingdotgg/ts-rust", src:"GitHub", meta:"HN 热度 97"},
+    {cat:"tool", title:"SamsungLabs 开源 LittleBit：亚 1-bit 的 LLM 压缩方案", url:"https://github.com/SamsungLabs/LittleBit", src:"GitHub", meta:"HN 热度 33"},
+    {cat:"paper", title:"Long-WAM：扩展世界-动作模型的上下文长度", url:"http://arxiv.org/abs/2610.10528v1", src:"arXiv cs.AI", meta:"2026-10-07"},
+    {cat:"paper", title:"RoboJEPA：扩展机器人潜在世界模型", url:"http://arxiv.org/abs/2610.10515v1", src:"arXiv cs.AI", meta:"2026-10-07"},
+    {cat:"paper", title:"Decoupling Exploration from Optimization in RLVR", url:"http://arxiv.org/abs/2610.10536v1", src:"arXiv cs.AI", meta:"2026-10-07"},
+    {cat:"paper", title:"A Society of Researchers：为自主科研智能体设计「制度」", url:"http://arxiv.org/abs/2610.10468v1", src:"arXiv cs.AI", meta:"2026-10-07"},
+    {cat:"paper", title:"Before They Can Solve：从基座模型预测后训练代码智能体的表现", url:"http://arxiv.org/abs/2610.10478v1", src:"arXiv cs.AI", meta:"2026-10-07"},
+    {cat:"paper", title:"RECAST：通过自适应证据路由计算合适的上下文", url:"http://arxiv.org/abs/2610.10507v1", src:"arXiv cs.AI", meta:"2026-10-07"},
+    {cat:"biz", title:"中国团队 Manus 与 Meta 分拆后首轮融资超 5 亿美元", url:"https://techcrunch.com/2026/10/08/chinas-manus-raises-over-500m-in-first-funding-round-since-split-with-meta/", src:"TechCrunch", meta:"2026-10-08"},
+    {cat:"biz", title:"Nous Research 确认 15 亿美元估值，面向企业推出 AI 智能体产品", url:"https://techcrunch.com/2026/10/07/nous-research-confirms-it-hit-1-5b-valuation-launches-ai-agents-for-business-users/", src:"TechCrunch", meta:"2026-10-07"},
+    {cat:"biz", title:"Goodfire 推出「由内而外」的监控方案，低成本拦截失控的 AI 智能体", url:"https://techcrunch.com/2026/10/08/goodfire-says-its-new-inside-out-monitors-catch-rogue-ai-agents-at-a-fraction-of-the-cost/", src:"TechCrunch", meta:"2026-10-08"},
+    {cat:"biz", title:"Google 推出本地优先的会议记录产品，对标 Granola", url:"https://techcrunch.com/2026/10/08/google-releases-a-new-local-first-granola-competitor/", src:"TechCrunch", meta:"2026-10-08"},
+    {cat:"biz", title:"Natura 推出 99 美元智能戒指，把 AI 智能体戴在手上", url:"https://techcrunch.com/2026/10/08/naturas-smart-ring-puts-ai-agents-on-your-finger/", src:"TechCrunch", meta:"2026-10-08"}
+  ]
+};
+
+const SECTIONS = [
+  {key:"model", cls:"model", name:"模型与产品"},
+  {key:"tool",  cls:"tool",  name:"工具与开源"},
+  {key:"paper", cls:"paper", name:"论文速览"},
+  {key:"biz",   cls:"biz",   name:"行业与融资"}
+];
+
+function render(filter){
+  const root = document.getElementById("body");
+  const items = DATA.items.filter(i => filter === "all" || i.cat === filter);
+  document.getElementById("count").textContent = DATA.items.length;
+  document.getElementById("date").textContent = DATA.date;
+  let html = "";
+  SECTIONS.forEach(s => {
+    const list = items.filter(i => i.cat === s.key);
+    if (!list.length) return;
+    html += `<section><h2 class="${s.cls}">${s.name}</h2>`;
+    list.forEach(i => {
+      const domain = (() => { try { return new URL(i.url).hostname.replace(/^www\./,""); } catch(e){ return ""; } })();
+      html += `<div class="item">
+        <a class="title" href="${i.url}" target="_blank" rel="noopener">${i.title}</a>
+        <div class="meta"><span class="badge">${i.src}</span><span>${i.meta}</span><span>${domain}</span></div>
+      </div>`;
+    });
+    html += `</section>`;
+  });
+  root.innerHTML = html || `<p style="color:var(--muted)">这一栏今天没有内容。</p>`;
+}
+
+document.getElementById("filters").addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  document.querySelectorAll("#filters button").forEach(b => b.classList.remove("on"));
+  btn.classList.add("on");
+  render(btn.dataset.f);
+});
+render("all");
+</script>
+</body>
+</html>
