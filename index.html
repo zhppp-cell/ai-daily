@@ -3,160 +3,158 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI 日报</title>
+<title>系统训练台</title>
 <style>
   :root{
     --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
-    --line:#ededed; --link:#1a56db;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
   }
   @media (prefers-color-scheme: dark){
     :root{
       --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
-      --line:#26272b; --link:#7aa2f7;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
     }
   }
   *{box-sizing:border-box}
   body{
     margin:0;background:var(--bg);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
-    line-height:1.75;-webkit-font-smoothing:antialiased;font-size:15px;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
   }
-  .wrap{max-width:660px;margin:0 auto;padding:56px 22px 80px}
-
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
   h1{font-size:20px;margin:0;font-weight:600}
-  .date{color:var(--muted);font-size:13px;margin-top:4px}
-  .lead{color:var(--muted);font-size:13.5px;margin-top:14px}
-
-  section{margin-top:44px}
-  h2{
-    font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;
-    margin:0;padding-bottom:8px;border-bottom:1px solid var(--line);
-  }
-  .item{padding:16px 0;border-bottom:1px solid var(--line)}
-  .item:last-child{border-bottom:none}
-  .t{font-size:16px;font-weight:600;line-height:1.5}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .stage{font-size:13px;color:var(--muted);margin-top:16px;padding:9px 13px;background:var(--mark);border-radius:8px}
+  .stage b{color:var(--text)}
+  section{margin-top:42px}
+  h2{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .block{padding:16px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .t{font-size:16px;font-weight:600;line-height:1.55}
   .t a{color:var(--text);text-decoration:none}
   .t a:hover{color:var(--link);text-decoration:underline;text-underline-offset:3px}
-  .d{color:var(--muted);font-size:14px;margin-top:5px}
-  .s{color:var(--faint);font-size:12px;margin-top:6px}
-  .num{display:inline-block;width:20px;color:var(--faint);font-variant-numeric:tabular-nums}
-  .how{color:var(--muted);font-size:14px;margin-top:6px}
-  .how b{color:var(--text);font-weight:600}
-
-  footer{margin-top:56px;color:var(--faint);font-size:12.5px;line-height:1.9}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:14px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  .txt b, .txt strong{color:var(--text);font-weight:600}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;color:var(--text);background:var(--mark);border-radius:8px;padding:10px 13px}
+  .goal b{font-weight:600}
+  .src{color:var(--faint);font-size:12px;margin-top:6px}
+  .why{font-size:14px;color:var(--muted);margin-top:6px}
+  .why b{color:var(--text)}
+  .chain{margin-top:6px}
+  .chain div{font-size:13.5px;color:var(--muted);padding:5px 0}
+  .chain div.now{color:var(--text);font-weight:600}
+  .chain span{display:inline-block;width:18px;color:var(--faint);font-variant-numeric:tabular-nums}
+  footer{margin-top:52px;color:var(--faint);font-size:12.5px;line-height:1.9}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>AI 日报</h1>
-    <div class="date" id="date"></div>
-    <div class="lead" id="lead"></div>
+    <h1>系统训练台</h1>
+    <div class="sub" id="date"></div>
+    <div class="stage" id="stage"></div>
   </header>
   <div id="body"></div>
   <footer>
-    来源：Hacker News、TechCrunch、arXiv、GitHub<br>
-    摘要依据原文标题整理，链接为原文 · 每天自动更新
+    每天 30 分钟：任务 20 分钟 + AI 进展 3 分钟 + 回顾<br>
+    由 Codex 每天 8:30 更新 · 做完把你的一句话判断发给我
   </footer>
 </div>
 
 <script>
 const DATA = {
-  date: "2026 年 10 月 9 日",
-  lead: "4 条要闻 · 2 条使用技巧 · 1 个可用技能 · 2 篇论文",
-  news: [
-    {t:"OpenAI 分享数学领域的 AI 进展",
-     d:"官方公布 AI 在数学研究上的进展，是这两天讨论度最高的一条。",
-     url:"https://openai.com/index/sharing-ai-progress-in-mathematics/",
-     s:"openai.com · 讨论热度 1307"},
-    {t:"Anthropic 发布 Claude Haiku 5.5",
-     d:"轻量快速版本的更新，主要面向高频调用、低成本的场景。",
-     url:"https://www.anthropic.com/claude-haiku-5-5",
-     s:"anthropic.com · 讨论热度 993"},
-    {t:"OpenAI 发布 GPT-6：面向所有人的智能界面",
-     d:"新一代模型发布，重点放在把模型能力变成日常的界面体验。",
-     url:"https://openai.com/index/gpt-6-for-everyone/",
-     s:"openai.com · 讨论热度 723"},
-    {t:"OpenAI 撤回三篇数学结果",
-     d:"官方仓库记录了三篇数学结果的撤回，可以和上面的「进展」对照着看。",
-     url:"https://github.com/openai/math/blob/main/history.md",
-     s:"github.com · 讨论热度 335"}
+  date: "2026-10-09 周五",
+  chain: {
+    name: "位置精度链",
+    layers: [
+      "指令从哪来：上位机 / PLC 下发的目标位置",
+      "指令怎么传：总线（EtherCAT）到驱动器",
+      "驱动器怎么执行：位置环 → 速度环 → 电流环 → PWM",
+      "电机怎么转：转矩 → 转子 → 传动机构",
+      "机械怎么到位：刚度、间隙、摩擦、预紧",
+      "位置怎么被测：编码器 / 光栅尺 → 分辨率 → 反馈",
+      "误差怎么成指标：定位精度、重复定位精度、反向差值、稳定性"
+    ],
+    day: 1
+  },
+  task: {
+    title: "先看清整条链：从「发一个指令」到「报告一个精度指标」",
+    problem: "把目标位置变成实际位置，中间每一步都会引入误差。你的价值不是背公式，而是能指着这条链说清楚「这里可能出问题」。",
+    metrics: [
+      "定位精度：到得了吗（与目标的偏差）",
+      "重复定位精度：每次都到同一个地方吗（离散程度）",
+      "反向差值：正转到位和反转到位差多少（机械间隙/预紧的信号）",
+      "位置稳定性：停住之后会不会漂（热与噪声的信号）"
+    ],
+    fail: [
+      "定位不准、跟随误差大 → 多半在控制环（带宽、前馈、增益）",
+      "重复性差但中心值准 → 多半是热漂移或随机扰动",
+      "反向差值大 → 多半是机械间隙、预紧不足或摩擦",
+      "停住后缓慢漂移 → 多半是热变形，不是控制问题"
+    ],
+    ask: [
+      "这台调台的反馈元件是编码器还是光栅尺？分辨率多少？",
+      "是半闭环还是全闭环（反馈在电机端还是工作台端）？",
+      "位置环带宽大概多少？有没有前馈？"
+    ],
+    act: "翻出你手上最近一组重复定位数据，把「正向到位读数」和「反向到位读数」分别求平均，两个平均值之差就是反向差值的第一手证据。不用精确，先看量级。",
+    goal: "能画出这条链的 6 个环节，并指出你这台设备上最可疑的 1 个环节。"
+  },
+  ai: [
+    {
+      t: "OpenAI 发布 GPT-6：面向所有人的智能界面",
+      url: "https://openai.com/index/gpt-6-for-everyone/",
+      d: "新一代模型发布，重点是把模型能力做成日常界面（能力变化类，不是产品促销）。",
+      why: "对你意味着：写测试方案初稿、整理数据说明这类文字工作，可以更多交给它起草，你只做判断和订正。属于「文档链」上的工具升级。"
+    },
+    {
+      t: "OpenAI 撤回三篇数学结果",
+      url: "https://github.com/openai/math/blob/main/history.md",
+      d: "官方仓库记录了三篇数学结果的撤回。",
+      why: "对你意味着：能力再强的 AI 也会出错，而且是被同行验证出来的。这条正好是你岗位的本职——任何输出都要有验证环节，别直接信。"
+    }
   ],
-  tips: [
-    {t:"先要提纲，再要正文",
-     how:"让 AI <b>先把结构和要点列出来</b>，你看过、点头之后，再让它展开写。一次就写对的概率高很多，返工明显减少。",
-     s:"适用：写报告、写方案、写文章"},
-    {t:"给样例，别给形容词",
-     how:"把你满意的样子直接贴给它，说「<b>照这个来</b>」。这比写一堆「专业一点、简洁一点」有效得多，因为它能照着格式对齐。",
-     s:"适用：格式、语气、排版"}
-  ],
-  skills: [
-    {t:"文档、表格、PDF，本机已经能处理",
-     how:"直接说「把这份 PDF 读出来」「用这张表做个汇总」「照这个模板出一份 Word」就行，对应的能力本机已经装好，不需要额外配置。",
-     s:"文档 · 表格 · PDF · 演示文稿"}
-  ],
-  papers: [
-    {t:"Long-WAM：扩展世界-动作模型的上下文长度",
-     d:"让「世界模型 + 动作」这类方法能处理更长的上下文。",
-     url:"http://arxiv.org/abs/2610.10528v1",
-     s:"arXiv cs.AI · 10-07"},
-    {t:"RoboJEPA：扩展机器人潜在世界模型",
-     d:"面向机器人学习的潜在世界模型扩展工作。",
-     url:"http://arxiv.org/abs/2610.10515v1",
-     s:"arXiv cs.AI · 10-07"}
-  ]
+  yesterday: "这是第一条。从明天开始，这里会放你昨天回给我的那句话判断。"
 };
 
 function render(){
   document.getElementById("date").textContent = DATA.date;
-  document.getElementById("lead").textContent = DATA.lead;
+  document.getElementById("stage").innerHTML =
+    `本周链条：<b>${DATA.chain.name}</b> · 第 <b>${DATA.chain.day}</b> / ${DATA.chain.layers.length} 层`;
+
   let h = "";
 
-  h += `<section><h2>今日要闻</h2>`;
-  DATA.news.forEach((i,n) => {
-    h += `<div class="item">
-      <div class="t"><span class="num">${n+1}</span><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
-      <div class="d">${i.d}</div>
-      <div class="s">${i.s}</div>
+  h += `<section><h2>今天的任务 · 20 分钟</h2>`;
+  h += `<div class="block"><div class="t">${DATA.task.title}</div>
+    <div class="lbl">解决什么问题</div><div class="txt">${DATA.task.problem}</div>
+    <div class="lbl">关键指标</div><ul>${DATA.task.metrics.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">典型失效 → 先怀疑哪里</div><ul>${DATA.task.fail.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">该问专家什么</div><ul>${DATA.task.ask.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">用你手上的东西验证</div><div class="txt">${DATA.task.act}</div>
+    <div class="goal"><b>过关标准：</b>${DATA.task.goal}</div>
+  </div></section>`;
+
+  h += `<section><h2>AI 进展 · 3 分钟</h2>`;
+  DATA.ai.forEach(i => {
+    h += `<div class="block">
+      <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
+      <div class="txt">${i.d}</div>
+      <div class="why">${i.why}</div>
     </div>`;
   });
   h += `</section>`;
 
-  if (DATA.tips.length) {
-    h += `<section><h2>技能与技巧</h2>`;
-    DATA.tips.forEach(i => {
-      h += `<div class="item">
-        <div class="t">${i.t}</div>
-        <div class="how">${i.how}</div>
-        <div class="s">${i.s}</div>
-      </div>`;
-    });
-    h += `</section>`;
-  }
+  h += `<section><h2>昨天的一句话</h2><div class="block"><div class="txt">${DATA.yesterday}</div></div></section>`;
 
-  if (DATA.skills.length) {
-    h += `<section><h2>顺手能用</h2>`;
-    DATA.skills.forEach(i => {
-      h += `<div class="item">
-        <div class="t">${i.t}</div>
-        <div class="how">${i.how}</div>
-        <div class="s">${i.s}</div>
-      </div>`;
-    });
-    h += `</section>`;
-  }
-
-  if (DATA.papers.length) {
-    h += `<section><h2>论文速览</h2>`;
-    DATA.papers.forEach(i => {
-      h += `<div class="item">
-        <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
-        <div class="d">${i.d}</div>
-        <div class="s">${i.s}</div>
-      </div>`;
-    });
-    h += `</section>`;
-  }
+  h += `<section><h2>本周链条一览</h2><div class="chain">`;
+  DATA.chain.layers.forEach((l,i) => {
+    const now = (i+1) === DATA.chain.day ? ' class="now"' : "";
+    h += `<div${now}><span>${i+1}</span>${l}</div>`;
+  });
+  h += `</div></section>`;
 
   document.getElementById("body").innerHTML = h;
 }

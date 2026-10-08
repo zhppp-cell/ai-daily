@@ -1,22 +1,13 @@
 {
-  "date": "2026-10-09",
-  "lead": "4 条要闻 · 2 条使用技巧 · 1 个可用技能 · 2 篇论文",
-  "sources": ["Hacker News", "TechCrunch", "arXiv cs.AI", "GitHub"],
-  "news": [
-    {"t": "OpenAI 分享数学领域的 AI 进展", "d": "官方公布 AI 在数学研究上的进展，是这两天讨论度最高的一条。", "url": "https://openai.com/index/sharing-ai-progress-in-mathematics/", "s": "openai.com · 讨论热度 1307"},
-    {"t": "Anthropic 发布 Claude Haiku 5.5", "d": "轻量快速版本的更新，主要面向高频调用、低成本的场景。", "url": "https://www.anthropic.com/claude-haiku-5-5", "s": "anthropic.com · 讨论热度 993"},
-    {"t": "OpenAI 发布 GPT-6：面向所有人的智能界面", "d": "新一代模型发布，重点放在把模型能力变成日常的界面体验。", "url": "https://openai.com/index/gpt-6-for-everyone/", "s": "openai.com · 讨论热度 723"},
-    {"t": "OpenAI 撤回三篇数学结果", "d": "官方仓库记录了三篇数学结果的撤回，可以和上面的「进展」对照着看。", "url": "https://github.com/openai/math/blob/main/history.md", "s": "github.com · 讨论热度 335"}
-  ],
-  "tips": [
-    {"t": "先要提纲，再要正文", "how": "让 AI 先把结构和要点列出来，你看过、点头之后，再让它展开写。一次就写对的概率高很多，返工明显减少。", "s": "适用：写报告、写方案、写文章"},
-    {"t": "给样例，别给形容词", "how": "把你满意的样子直接贴给它，说「照这个来」。这比写一堆「专业一点、简洁一点」有效得多，因为它能照着格式对齐。", "s": "适用：格式、语气、排版"}
-  ],
-  "skills": [
-    {"t": "文档、表格、PDF，本机已经能处理", "how": "直接说「把这份 PDF 读出来」「用这张表做个汇总」「照这个模板出一份 Word」就行。", "s": "文档 · 表格 · PDF · 演示文稿"}
-  ],
-  "papers": [
-    {"t": "Long-WAM：扩展世界-动作模型的上下文长度", "d": "让「世界模型 + 动作」这类方法能处理更长的上下文。", "url": "http://arxiv.org/abs/2610.10528v1", "s": "arXiv cs.AI · 10-07"},
-    {"t": "RoboJEPA：扩展机器人潜在世界模型", "d": "面向机器人学习的潜在世界模型扩展工作。", "url": "http://arxiv.org/abs/2610.10515v1", "s": "arXiv cs.AI · 10-07"}
+  "date": "2026-10-09 周五",
+  "chain": "位置精度链",
+  "day": "1 / 7",
+  "task": {
+    "title": "先看清整条链：从「发一个指令」到「报告一个精度指标」",
+    "goal": "能画出这条链的 6 个环节，并指出你这台设备上最可疑的 1 个环节。"
+  },
+  "ai": [
+    {"t": "OpenAI 发布 GPT-6：面向所有人的智能界面", "url": "https://openai.com/index/gpt-6-for-everyone/", "why": "文档类起草工作可以更多交给它，你专注判断与订正（文档链工具升级）。"},
+    {"t": "OpenAI 撤回三篇数学结果", "url": "https://github.com/openai/math/blob/main/history.md", "why": "能力再强的 AI 也会出错且需被验证——这正是测试岗位的本职，任何输出都要有验证环节。"}
   ]
 }
