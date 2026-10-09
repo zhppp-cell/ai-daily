@@ -5,7 +5,7 @@
   "current": {
     "chain_index": 1,
     "chain_name": "位置精度链",
-    "day": 2,
+    "day": 3,
     "layers": [
       "指令从哪来：上位机 / PLC 下发的目标位置",
       "指令怎么传：总线（EtherCAT）到驱动器",
