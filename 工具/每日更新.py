@@ -11,6 +11,7 @@
 
 import argparse
 import datetime
+import html as html_mod
 import json
 import os
 import re
@@ -22,6 +23,8 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROGRESS_FILE = os.path.join(ROOT, "进度.json")
 TEMPLATE_FILE = os.path.join(ROOT, "工具", "模板.html")
+ARCHIVE_TEMPLATE_FILE = os.path.join(ROOT, "工具", "往期模板.html")
+ARCHIVE_FILE = os.path.join(ROOT, "history.html")
 DATA_DIR = os.path.join(ROOT, "数据")
 FEEDBACK_FILE = os.path.join(ROOT, "反馈.md")
 UA = "ai-daily-bot/1.0 (+https://github.com/zhppp-cell/ai-daily)"
@@ -363,6 +366,77 @@ def fallback_ai(candidates):
 
 # ---------------------------------------------------------------- 主流程
 
+def render_archive():
+    """把所有 数据/YYYY-MM-DD.json 汇总成一个「往期任务」页面。"""
+    if not os.path.isdir(DATA_DIR):
+        return
+    days = []
+    for name in sorted(os.listdir(DATA_DIR), reverse=True):
+        if not name.endswith(".json"):
+            continue
+        d = load_json(os.path.join(DATA_DIR, name))
+        if isinstance(d, dict) and d.get("task"):
+            days.append(d)
+    if not days:
+        return
+
+    esc = html_mod.escape
+    parts = []
+    for i, d in enumerate(days):
+        task = d.get("task") or {}
+        chain = d.get("chain") or {}
+        layer = chain.get("day", "")
+        title = task.get("title", "")
+        open_attr = " open" if i == 0 else ""
+        parts.append(
+            '<details%s><summary><span class="d">%s</span> · <span class="c">%s 第 %s 层</span><br>%s</summary>'
+            % (open_attr, esc(str(d.get("date", ""))), esc(str(chain.get("name", ""))), esc(str(layer)), esc(str(title)))
+        )
+        parts.append('<div class="body">')
+        if task.get("problem"):
+            parts.append('<div class="lbl">解决什么问题</div><div class="txt">%s</div>' % esc(task["problem"]))
+        for key, label in (("metrics", "关键指标"), ("fail", "典型失效 → 先怀疑哪里"), ("ask", "该问专家什么")):
+            if isinstance(task.get(key), list) and task[key]:
+                parts.append('<div class="lbl">%s</div><ul>%s</ul>' % (label, "".join("<li>%s</li>" % esc(str(x)) for x in task[key])))
+        if task.get("act"):
+            parts.append('<div class="lbl">用你手上的东西验证</div><div class="txt">%s</div>' % esc(task["act"]))
+        if task.get("goal"):
+            parts.append('<div class="goal"><b>过关标准：</b>%s</div>' % esc(task["goal"]))
+        ai = d.get("ai") or []
+        if ai:
+            parts.append('<div class="lbl">当天 AI 进展</div>')
+            for it in ai:
+                parts.append(
+                    '<div class="aitem"><a href="%s" target="_blank" rel="noopener">%s</a>'
+                    '<div class="txt">%s</div></div>'
+                    % (esc(str(it.get("url", ""))), esc(str(it.get("t", ""))), esc(str(it.get("d", ""))))
+                )
+        parts.append("</div></details>")
+
+    with open(ARCHIVE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
+        tpl = f.read()
+    out = tpl.replace("__ITEMS__", "\n".join(parts)).replace("__COUNT__", str(len(days)))
+    with open(ARCHIVE_FILE, "w", encoding="utf-8", newline="\n") as f:
+        f.write(out)
+    log("已生成 history.html（往期 %d 天）" % len(days))
+
+
+def render_latest_index():
+    """只按最新一天的数据重建首页（不生成新内容）。"""
+    if not os.path.isdir(DATA_DIR):
+        return
+    names = sorted([n for n in os.listdir(DATA_DIR) if n.endswith(".json")], reverse=True)
+    if not names:
+        return
+    data = load_json(os.path.join(DATA_DIR, names[0]))
+    with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
+        tpl = f.read()
+    payload = json.dumps(data, ensure_ascii=False, indent=2).replace("</", "<\\/")
+    with open(os.path.join(ROOT, "index.html"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(tpl.replace("__DATA__", payload))
+    log("已按 %s 重建 index.html" % names[0])
+
+
 def read_feedback():
     if not os.path.exists(FEEDBACK_FILE):
         return None
@@ -403,11 +477,36 @@ def git(args, check=True):
     return r.returncode == 0
 
 
+def commit_and_push(message):
+    git(["config", "user.name", os.environ.get("GIT_AUTHOR_NAME", "ai-daily-bot")])
+    git(["config", "user.email", os.environ.get("GIT_AUTHOR_EMAIL", "ai-daily-bot@users.noreply.github.com")])
+    git(["add", "-A"])
+    git(["commit", "-m", message], check=False)
+    for i in range(1, 7):
+        if git(["push"], check=False):
+            log("推送成功")
+            return True
+        log("第 %d 次推送失败，重试" % i)
+    log("推送连续失败")
+    return False
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-push", action="store_true", help="只生成文件，不提交推送")
     ap.add_argument("--date", default=None, help="覆盖日期，格式 YYYY-MM-DD")
+    ap.add_argument("--render-only", action="store_true",
+                    help="不生成新内容、不推进进度，只按已有数据重建首页和往期页面")
     args = ap.parse_args()
+
+    if args.render_only:
+        render_latest_index()
+        render_archive()
+        if args.no_push:
+            log("--no-push：跳过提交推送")
+            return
+        commit_and_push("重建页面（不推进进度）")
+        return
 
     today = args.date or datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d")
     weekday = "周" + "一二三四五六日"[datetime.date.fromisoformat(today).weekday()]
@@ -451,6 +550,7 @@ def main():
     with open(os.path.join(ROOT, "index.html"), "w", encoding="utf-8", newline="\n") as f:
         f.write(html)
     log("已生成 index.html")
+    render_archive()
 
     advance(progress, chain_name, layers)
     progress["updated"] = today
@@ -464,16 +564,8 @@ def main():
         log("--no-push：跳过提交推送")
         return
 
-    git(["config", "user.name", os.environ.get("GIT_AUTHOR_NAME", "ai-daily-bot")])
-    git(["config", "user.email", os.environ.get("GIT_AUTHOR_EMAIL", "ai-daily-bot@users.noreply.github.com")])
-    git(["add", "-A"])
-    git(["commit", "-m", "自动更新 %s：%s 第 %d 层" % (today, chain_name, day)], check=False)
-    for i in range(1, 7):
-        if git(["push"], check=False):
-            log("推送成功")
-            return
-        log("第 %d 次推送失败，重试" % i)
-    raise SystemExit("推送连续失败")
+    if not commit_and_push("自动更新 %s：%s 第 %d 层" % (today, chain_name, day)):
+        raise SystemExit("推送连续失败")
 
 
 if __name__ == "__main__":
