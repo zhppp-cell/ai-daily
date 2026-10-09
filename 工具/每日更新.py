@@ -194,7 +194,8 @@ def fetch_techcrunch(limit=8):
 
 def call_model(messages, max_tokens=1400):
     """优先用 GitHub 自带模型（Actions 里自带 GITHUB_TOKEN），
-    其次用 DeepSeek（需要 DEEPSEEK_API_KEY），都失败返回 None。"""
+    其次用 DeepSeek（需要 DEEPSEEK_API_KEY），都失败返回 None。
+    返回 (文本, 结束原因)；结束原因为 length 说明被截断。"""
     errors = []
 
     gh_token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
@@ -211,7 +212,8 @@ def call_model(messages, max_tokens=1400):
                 headers={"Authorization": "Bearer %s" % gh_token, "Accept": "application/json"},
                 timeout=90,
             )
-            return r["choices"][0]["message"]["content"]
+            choice = r["choices"][0]
+            return choice["message"]["content"], choice.get("finish_reason")
         except Exception as e:
             errors.append("github-models: %s" % e)
 
@@ -229,7 +231,8 @@ def call_model(messages, max_tokens=1400):
                 headers={"Authorization": "Bearer %s" % ds_key},
                 timeout=120,
             )
-            return r["choices"][0]["message"]["content"]
+            choice = r["choices"][0]
+            return choice["message"]["content"], choice.get("finish_reason")
         except Exception as e:
             errors.append("deepseek: %s" % e)
 
@@ -237,7 +240,7 @@ def call_model(messages, max_tokens=1400):
         log("模型调用都失败了:", "; ".join(errors))
     else:
         log("没有可用的模型通道（既没有 GITHUB_TOKEN 也没有 DEEPSEEK_API_KEY）")
-    return None
+    return None, None
 
 
 PROFILE = (
@@ -257,20 +260,21 @@ def gen_task(progress, chain_name, day, layer):
         + "\n\n请设计一个 20 分钟能完成的单元。要求：用他能懂的话写，术语第一次出现时用一句话解释；"
         "必须绑到他的真实场景（调台、重复定位精度、最小步进、模态测试、伺服、Codesys、热耗数据）；"
         "act 这一段要给出他今天就能在自己数据或设备上做的一件小事；不要空话。"
+        "篇幅控制：整段 JSON 不超过 900 字；problem 不超过 150 字；metrics / fail / ask 每条不超过 55 字；act 不超过 200 字；goal 不超过 60 字。"
         "\n只输出 JSON，不要任何多余文字，格式："
         '{"title":"...","problem":"...","metrics":["3-4 条"],"fail":["3-4 条，写成「现象 → 先怀疑什么」"],'
         '"ask":["2-3 条，他会问专家/供应商的问题"],"act":"...","goal":"一句话过关标准"}'
     )
-    out = call_model([{"role": "user", "content": prompt}])
-    data = parse_json_loose(out)
-    if not isinstance(data, dict):
-        return None
-    if not all(data.get(k) for k in ("title", "problem", "act", "goal")):
-        return None
-    for k in ("metrics", "fail", "ask"):
-        if not isinstance(data.get(k), list) or not data[k]:
-            return None
-    return data
+    for attempt in (1, 2):
+        out, finish = call_model([{"role": "user", "content": prompt}], max_tokens=3000)
+        if finish == "length":
+            log("模型输出被截断，重试" if attempt == 1 else "模型输出仍被截断")
+        data = parse_json_loose(out)
+        if isinstance(data, dict) and all(data.get(k) for k in ("title", "problem", "act", "goal")):
+            if all(isinstance(data.get(k), list) and data[k] for k in ("metrics", "fail", "ask")):
+                return data
+        log("第 %d 次生成的任务内容不完整，重试" % attempt)
+    return None
 
 
 def gen_ai_items(candidates):
@@ -286,7 +290,9 @@ def gen_ai_items(candidates):
         "\n只输出 JSON 数组，不要多余文字，格式："
         '[{"t":"中文标题","url":"原链接","d":"一句话说明","why":"这对一个测试工程师意味着什么，尽量挂到他正在学的链条上"}]'
     )
-    out = call_model([{"role": "user", "content": prompt}], max_tokens=800)
+    out, finish = call_model([{"role": "user", "content": prompt}], max_tokens=1600)
+    if finish == "length":
+        log("AI 条目输出被截断")
     data = parse_json_loose(out)
     if isinstance(data, dict):
         data = data.get("items") or data.get("ai") or []
@@ -311,7 +317,7 @@ def gen_layers(chain_name):
         "顺序按「指令/输入 → 中间环节 → 测量 → 指标/结论」推进。" % chain_name
         + '\n只输出 JSON 数组，7 个字符串，不要多余文字。例如：["第1层...","第2层..."]'
     )
-    out = call_model([{"role": "user", "content": prompt}], max_tokens=700)
+    out, finish = call_model([{"role": "user", "content": prompt}], max_tokens=1200)
     data = parse_json_loose(out)
     if isinstance(data, dict):
         data = data.get("layers") or []
