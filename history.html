@@ -49,17 +49,17 @@
   <h1>往期任务</h1>
   <div class="sub">共 1 天 · <a href="./index.html">← 回今天的训练台</a></div>
   <div id="list">
-<details open><summary><span class="d">2026-10-09 周五</span> · <span class="c">位置精度链 第 1 层</span><br>位置精度链 · 第 1 层：指令从哪来：上位机 / PLC 下发的目标位置</summary>
+<details open><summary><span class="d">2026-10-09 周五</span> · <span class="c">位置精度链 第 1 层</span><br>位置精度链第1层：指令从哪来——上位机/PLC下发的目标位置</summary>
 <div class="body">
-<div class="lbl">解决什么问题</div><div class="txt">今天模型通道没跑通，只给出这一层的位置和问题范围，供你先建立印象。</div>
-<div class="lbl">关键指标</div><ul><li>这一层在整条链里负责什么，输入是什么、输出是什么</li><li>它最常引起什么现象（精度差、重复性差、还是漂移）</li><li>如果它出问题，你在数据上会先看到什么</li></ul>
-<div class="lbl">典型失效 → 先怀疑哪里</div><ul><li>数据整体偏移 → 先看这一层之前的基准或标定</li><li>重复性突然变差 → 先看这一层有没有松动、温漂或噪声</li><li>现象只在某个方向出现 → 先怀疑这一层有方向相关的间隙或摩擦</li></ul>
-<div class="lbl">该问专家什么</div><ul><li>这一层的规格书/参数表在哪？关键指标是多少？</li><li>这一层出过什么现场问题，最后是怎么定位的？</li></ul>
-<div class="lbl">用你手上的东西验证</div><div class="txt">把这一层的名字写下来，然后在你手上的设备或数据里找出一个能对应上的具体物件或读数。</div>
-<div class="goal"><b>过关标准：</b>能用一句话说清这一层在链条里的作用，以及它最可能带来的误差现象。</div>
+<div class="lbl">解决什么问题</div><div class="txt">你测调台重复定位精度时，指令其实从Codesys/ST程序或上位机发出。若不知道目标位置怎么生成、怎么传，测出的偏差可能是指令问题，不是机械问题。</div>
+<div class="lbl">关键指标</div><ul><li>指令链路：上位机→PLC→伺服驱动器→电机，每段有延迟和量化</li><li>目标位置单位与分辨率：脉冲、微米或度，决定最小步进能否被表达</li><li>通信周期：EtherCAT/CAN等刷新率，影响定位稳定与模态测试激励</li><li>热耗数据若参与补偿，目标位置可能已被热模型改写</li></ul>
+<div class="lbl">典型失效 → 先怀疑哪里</div><ul><li>重复定位精度忽好忽坏 → 先怀疑通信周期抖动或指令刷新不同步</li><li>最小步进走不动 → 先怀疑目标位置分辨率或伺服电子齿轮比</li><li>模态测试相干差 → 先怀疑指令更新率与采样不同步</li><li>热耗变化后定位漂 → 先怀疑热补偿是否改写了目标位置</li></ul>
+<div class="lbl">该问专家什么</div><ul><li>目标位置从哪一层开始算？上位机还是PLC内部？</li><li>通信周期多少？位置指令刷新率和伺服电流环差多少？</li><li>热补偿是改目标位置，还是改反馈？</li></ul>
+<div class="lbl">用你手上的东西验证</div><div class="txt">今天在Codesys里抓一次调台单步指令：记录目标位置变量、通信周期、伺服实际位置。把目标位置和实际位置画在同一时间轴，看差值。若差值在指令更新时刻跳变，说明你测的重复定位精度里混了指令刷新延迟。</div>
+<div class="goal"><b>过关标准：</b>能画出从指令源到伺服的目标位置链路，并指出哪一段可能污染你的重复定位精度数据。</div>
 <div class="lbl">当天 AI 进展</div>
-<div class="aitem"><a href="https://openai.com/index/sharing-ai-progress-in-mathematics/" target="_blank" rel="noopener">OpenAI 分享数学 AI 进展，但学界认为其解法尚未达标</a><div class="txt">OpenAI 公布了一批由 AI 参与产出的数学结果，随后被指出部分证明存在漏洞或未达该领域严谨标准，甚至有三项结果被撤回。</div></div>
-<div class="aitem"><a href="https://techcrunch.com/2026/10/08/google-brings-agentic-ai-to-gemini-starting-with-businesses/" target="_blank" rel="noopener">Google 将 agentic AI 引入 Gemini，先从企业场景落地</a><div class="txt">Gemini 开始具备能自主调用工具、多步执行任务的 agent 能力，并优先面向企业流程集成。</div></div>
+<div class="aitem"><a href="https://openai.com/index/sharing-ai-progress-in-mathematics/" target="_blank" rel="noopener">OpenAI 分享数学 AI 进展，但学界认为其解法尚未达到领域标准</a><div class="txt">OpenAI 发布数学推理方面的 AI 进展，随后有研究者指出其中三条结果被撤回、且整体未达到数学界的验证标准。</div></div>
+<div class="aitem"><a href="https://techcrunch.com/2026/10/08/google-brings-agentic-ai-to-gemini-starting-with-businesses/" target="_blank" rel="noopener">Google 将 agentic AI 引入 Gemini，先从企业场景开始</a><div class="txt">Google 把能自主执行多步任务的 agent 能力接入 Gemini，面向企业工作流。</div></div>
 </div></details>
   </div>
   <footer>每天 30 分钟 · 由云端自动累积，最新的排在最上面</footer>
