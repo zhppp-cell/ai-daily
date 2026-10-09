@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>往期任务 · 系统训练台</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .sub a{color:var(--link);text-decoration:none}
+  details{border-bottom:1px solid var(--line);padding:14px 0}
+  summary{cursor:pointer;font-size:15px;line-height:1.6;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸ ";color:var(--faint)}
+  details[open] summary::before{content:"▾ "}
+  summary .d{color:var(--muted);font-size:13px}
+  summary .c{color:var(--muted);font-size:13px}
+  .body{padding:12px 0 4px 16px;border-left:2px solid var(--line);margin-top:10px}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:12px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;background:var(--mark);border-radius:8px;padding:10px 13px}
+  .aitem{margin-top:8px}
+  .aitem a{color:var(--link);text-decoration:none;font-size:14px}
+  footer{margin-top:44px;color:var(--faint);font-size:12.5px}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>往期任务</h1>
+  <div class="sub">共 1 天 · <a href="./index.html">← 回今天的训练台</a></div>
+  <div id="list">
+<details open><summary><span class="d">2026-10-09 周五</span> · <span class="c">位置精度链 第 2 层</span><br>指令怎么传：EtherCAT 到驱动器——调台测试工程师的 20 分钟链路课</summary>
+<div class="body">
+<div class="lbl">解决什么问题</div><div class="txt">你调一个转台，Codesys 里让轴走 1 个最小步进（比如 0.001°），但实际镜台动没动、动多少，取决于指令从 PLC 到驱动器的传输是否完整、及时、不丢。EtherCAT 是工业以太网总线，像一条高速传送带，PLC 把位置指令打包成帧，驱动器在固定周期取走。如果这条传送带周期抖动、丢包或驱动器没及时响应，你测到的重复定位精度和最小步进就会变差，甚至模态测试里出现异常激励。今天你只需要能判断：指令传得对不对、够不够快、丢没丢。</div>
+<div class="lbl">关键指标</div><ul><li>总线周期：EtherCAT 每多少微秒发一帧，常见 1 ms、500 μs、250 μs；周期越大，最小步进响应越慢，调台可能‘等指令’</li><li>同步抖动：PLC 发指令和驱动器执行之间的时间偏差，通常要求 &lt; 1 个总线周期；抖动大时重复定位精度会散</li><li>丢包/错误计数：EtherCAT 从站有 CRC 错误、丢帧计数；非零且持续增长，说明线缆、接头或从站受干扰</li><li>驱动器位置环周期：驱动器内部电流/位置环执行周期，通常比总线周期快；若总线周期比位置环慢太多，最小步进会被‘吞掉’</li></ul>
+<div class="lbl">典型失效 → 先怀疑哪里</div><ul><li>现象：调台重复定位精度突然从 ±0.002° 变成 ±0.01° → 先怀疑总线同步抖动变大或丢包，查 EtherCAT 主站诊断计数</li><li>现象：发 1 个最小步进，镜台有时动有时不动 → 先怀疑总线周期太长或驱动器位置环没收到完整指令，看总线周期和驱动器使能状态</li><li>现象：模态测试中高频段出现异常尖峰 → 先怀疑总线周期与采样不同步，或指令更新率不够，导致激励信号被截断</li><li>现象：Codesys 里轴状态显示‘到位’，但实际镜台没到 → 先怀疑驱动器位置反馈没通过总线正确回传，查 EtherCAT 过程数据映射</li></ul>
+<div class="lbl">该问专家什么</div><ul><li>你们的 EtherCAT 主站周期和驱动器位置环周期分别是多少？同步模式是 DC（分布式时钟）还是自由运行？</li><li>如果我要测最小步进，总线周期和驱动器插补周期需要满足什么关系，才能保证 1 个步进不被吞掉？</li><li>EtherCAT 从站诊断里，哪些计数（CRC、丢帧、工作计数器）超过多少算异常？日常怎么监控？</li></ul>
+<div class="lbl">用你手上的东西验证</div><div class="txt">今天在 Codesys 里打开你的调台项目，找到 EtherCAT 主站配置，记下总线周期（比如 1 ms）和驱动器从站的同步模式。然后手动发一个最小步进指令，同时用示波器或驱动器软件抓一次‘指令位置’和‘实际位置’的曲线，看实际位置是否在 2 个总线周期内开始变化。如果没动或延迟超过 2 个周期，截屏保存，明天问供应商。</div>
+<div class="goal"><b>过关标准：</b>你能说出你的调台总线周期是多少、同步模式是什么，并且能判断一次最小步进指令有没有被完整、及时地传到驱动器。</div>
+<div class="lbl">当天 AI 进展</div>
+<div class="aitem"><a href="https://github.com/ymcrcat/rgpu" target="_blank" rel="noopener">Rgpu：让 PyTorch 张量跑在远程 GPU 上的设备</a><div class="txt">一个 PyTorch 设备后端，把张量计算透明地转发到远程 GPU 上执行，本地只做调度和结果回收。</div></div>
+<div class="aitem"><a href="https://twitter.com/danintheory/status/2108065033070789090" target="_blank" rel="noopener">OpenAI 撤下三项数学结果，学界质疑其标准</a><div class="txt">OpenAI 撤回三篇宣称的数学成果，随后学界与 Karagila 等人指出其证明未达领域标准，引发对 AI 生成数学结论可靠性的讨论。</div></div>
+</div></details>
+  </div>
+  <footer>每天 30 分钟 · 由云端自动累积，最新的排在最上面</footer>
+</div>
+</body>
+</html>
