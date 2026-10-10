@@ -25,33 +25,31 @@
   h1{font-size:20px;margin:0;font-weight:600}
   .sub{color:var(--muted);font-size:13px;margin-top:5px}
   .sub a{color:var(--link);text-decoration:none}
-  details{border-bottom:1px solid var(--line);padding:14px 0}
-  summary{cursor:pointer;font-size:15px;line-height:1.6;list-style:none}
-  summary::-webkit-details-marker{display:none}
-  summary::before{content:"▸ ";color:var(--faint)}
-  details[open] summary::before{content:"▾ "}
-  summary .d{color:var(--muted);font-size:13px}
-  summary .c{color:var(--muted);font-size:13px}
-  .body{padding:12px 0 4px 16px;border-left:2px solid var(--line);margin-top:10px}
-  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:12px}
-  .txt{color:var(--muted);font-size:14px;margin-top:3px}
-  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
-  li{margin:2px 0}
-  .goal{margin-top:12px;font-size:14px;background:var(--mark);border-radius:8px;padding:10px 13px}
-  .aitem{margin-top:8px}
-  .aitem a{color:var(--link);text-decoration:none;font-size:14px}
-  footer{margin-top:44px;color:var(--faint);font-size:12.5px}
+  .list{margin-top:26px}
+  a.row{
+    display:block;text-decoration:none;color:var(--text);
+    padding:15px 2px;border-bottom:1px solid var(--line);
+  }
+  a.row:hover .t{color:var(--link)}
+  a.row .d{color:var(--muted);font-size:12.5px;display:block}
+  a.row .c{color:var(--muted);font-size:12.5px;display:block;margin-top:1px}
+  a.row .t{display:block;font-size:15.5px;font-weight:600;margin-top:5px;line-height:1.55}
+  a.row .go{display:block;color:var(--faint);font-size:12px;margin-top:5px}
+  footer{margin-top:44px;color:var(--faint);font-size:12.5px;line-height:1.9}
   footer a{color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>往期任务</h1>
-  <div class="sub">共 __COUNT__ 天 · <a href="./index.html">← 回今天的训练台</a></div>
-  <div id="list">
+  <div class="sub">共 __COUNT__ 天 · 点任意一天看**当天的完整原文** · <a href="./index.html">← 回今天的训练台</a></div>
+  <div class="list">
 __ITEMS__
   </div>
-  <footer>每天 30 分钟 · 由云端自动累积，最新的排在最上面</footer>
+  <footer>
+    全部内容按时间累积在一个文本里：<a href="./合集.md">合集.md</a><br>
+    每天 30 分钟 · 由云端自动累积，最新的排在最上面
+  </footer>
 </div>
 </body>
 </html>
