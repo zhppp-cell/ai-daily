@@ -372,12 +372,73 @@ def fallback_ai(candidates):
 
 # ---------------------------------------------------------------- 主流程
 
+def render_page_html(data):
+    """按当天数据渲染一张完整的页面（首页和往期快照用的是同一套模板）。"""
+    with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
+        tpl = f.read()
+    payload = json.dumps(data, ensure_ascii=False, indent=2).replace("</", "<\\/")
+    return tpl.replace("__DATA__", payload)
+
+
+def day_markdown(d):
+    """把某一天的内容写成 Markdown（原文全文，不压缩）。"""
+    esc = html_mod.escape
+    chain = d.get("chain") or {}
+    task = d.get("task") or {}
+    out = []
+    out.append("## %s · %s 第 %s 层" % (d.get("date", ""), chain.get("name", ""), chain.get("day", "")))
+    out.append("")
+    out.append("### %s" % task.get("title", ""))
+    out.append("")
+    if task.get("problem"):
+        out.append("**解决什么问题**")
+        out.append("")
+        out.append(task["problem"])
+        out.append("")
+    for key, label in (("metrics", "关键指标"), ("fail", "典型失效 → 先怀疑哪里"), ("ask", "该问专家什么")):
+        if isinstance(task.get(key), list) and task[key]:
+            out.append("**%s**" % label)
+            out.append("")
+            for x in task[key]:
+                out.append("- %s" % x)
+            out.append("")
+    if task.get("act"):
+        out.append("**用你手上的东西验证**")
+        out.append("")
+        out.append(task["act"])
+        out.append("")
+    if task.get("goal"):
+        out.append("**过关标准：** %s" % task["goal"])
+        out.append("")
+    ai = d.get("ai") or []
+    if ai:
+        out.append("**当天 AI 进展**")
+        out.append("")
+        for it in ai:
+            out.append("- [%s](%s)" % (it.get("t", ""), it.get("url", "")))
+            if it.get("d"):
+                out.append("  - %s" % it["d"])
+            if it.get("why"):
+                out.append("  - %s" % it["why"])
+        out.append("")
+    if d.get("yesterday"):
+        out.append("**当天页面上的「昨天的一句话」**")
+        out.append("")
+        out.append(d["yesterday"])
+        out.append("")
+    return "\n".join(out)
+
+
 def render_archive():
-    """把所有 数据/YYYY-MM-DD.json 汇总成一个「往期任务」页面。"""
+    """生成三样东西：
+    1) 每天一份「原文快照」页面（YYYY-MM-DD.html），和当天首页内容完全一致；
+    2) history.html：往期目录，点进去就是那天的原文；
+    3) 合集.md：把所有天的原文按时间顺序累积成一个文本。
+    """
     if not os.path.isdir(DATA_DIR):
         return
     days = []
-    for name in sorted(os.listdir(DATA_DIR), reverse=True):
+    for name in sorted(os.listdir(DATA_DIR)):
         if not name.endswith(".json"):
             continue
         d = load_json(os.path.join(DATA_DIR, name))
@@ -385,46 +446,50 @@ def render_archive():
             days.append(d)
     if not days:
         return
+    days.sort(key=lambda d: str(d.get("date", "")))
 
     esc = html_mod.escape
-    parts = []
-    for i, d in enumerate(days):
-        task = d.get("task") or {}
+    rows = []
+    written = []
+    for d in days:
+        stamp = str(d.get("date", "")).split(" ")[0]
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", stamp):
+            continue
+        with open(os.path.join(ROOT, "%s.html" % stamp), "w", encoding="utf-8", newline="\n") as f:
+            f.write(render_page_html(d))
+        written.append(stamp)
+
+    for d in reversed(days):  # 目录最新的排最上面
+        stamp = str(d.get("date", "")).split(" ")[0]
+        if stamp not in written:
+            continue
         chain = d.get("chain") or {}
-        layer = chain.get("day", "")
-        title = task.get("title", "")
-        open_attr = " open" if i == 0 else ""
-        parts.append(
-            '<details%s><summary><span class="d">%s</span> · <span class="c">%s 第 %s 层</span><br>%s</summary>'
-            % (open_attr, esc(str(d.get("date", ""))), esc(str(chain.get("name", ""))), esc(str(layer)), esc(str(title)))
+        task = d.get("task") or {}
+        rows.append(
+            '<a class="row" href="./%s.html"><span class="d">%s</span>'
+            '<span class="c">%s · 第 %s 层</span>'
+            '<span class="t">%s</span>'
+            '<span class="go">看原文 →</span></a>'
+            % (stamp, esc(str(d.get("date", ""))), esc(str(chain.get("name", ""))),
+               esc(str(chain.get("day", ""))), esc(str(task.get("title", ""))))
         )
-        parts.append('<div class="body">')
-        if task.get("problem"):
-            parts.append('<div class="lbl">解决什么问题</div><div class="txt">%s</div>' % esc(task["problem"]))
-        for key, label in (("metrics", "关键指标"), ("fail", "典型失效 → 先怀疑哪里"), ("ask", "该问专家什么")):
-            if isinstance(task.get(key), list) and task[key]:
-                parts.append('<div class="lbl">%s</div><ul>%s</ul>' % (label, "".join("<li>%s</li>" % esc(str(x)) for x in task[key])))
-        if task.get("act"):
-            parts.append('<div class="lbl">用你手上的东西验证</div><div class="txt">%s</div>' % esc(task["act"]))
-        if task.get("goal"):
-            parts.append('<div class="goal"><b>过关标准：</b>%s</div>' % esc(task["goal"]))
-        ai = d.get("ai") or []
-        if ai:
-            parts.append('<div class="lbl">当天 AI 进展</div>')
-            for it in ai:
-                parts.append(
-                    '<div class="aitem"><a href="%s" target="_blank" rel="noopener">%s</a>'
-                    '<div class="txt">%s</div></div>'
-                    % (esc(str(it.get("url", ""))), esc(str(it.get("t", ""))), esc(str(it.get("d", ""))))
-                )
-        parts.append("</div></details>")
 
     with open(ARCHIVE_TEMPLATE_FILE, "r", encoding="utf-8") as f:
         tpl = f.read()
-    out = tpl.replace("__ITEMS__", "\n".join(parts)).replace("__COUNT__", str(len(days)))
+    out = tpl.replace("__ITEMS__", "\n".join(rows)).replace("__COUNT__", str(len(rows)))
     with open(ARCHIVE_FILE, "w", encoding="utf-8", newline="\n") as f:
         f.write(out)
-    log("已生成 history.html（往期 %d 天）" % len(days))
+
+    md = ["# 系统训练台 · 全部任务合集", "",
+          "由云端每天自动追加，按时间顺序排列；内容与当天网页原文一致。", ""]
+    for d in days:
+        md.append(day_markdown(d))
+        md.append("---")
+        md.append("")
+    with open(os.path.join(ROOT, "合集.md"), "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(md))
+
+    log("已生成 %d 天的原文快照、history.html、合集.md" % len(written))
 
 
 def render_latest_index():
@@ -435,11 +500,8 @@ def render_latest_index():
     if not names:
         return
     data = load_json(os.path.join(DATA_DIR, names[0]))
-    with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
-        tpl = f.read()
-    payload = json.dumps(data, ensure_ascii=False, indent=2).replace("</", "<\\/")
     with open(os.path.join(ROOT, "index.html"), "w", encoding="utf-8", newline="\n") as f:
-        f.write(tpl.replace("__DATA__", payload))
+        f.write(render_page_html(data))
     log("已按 %s 重建 index.html" % names[0])
 
 
