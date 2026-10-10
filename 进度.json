@@ -1,11 +1,11 @@
 {
-  "updated": "2026-10-09",
+  "updated": "2026-10-10",
   "daily_budget_minutes": 30,
   "goal": "系统工程师视角：横向拉宽，每层都懂到「能判断、能提问、能验收」的程度，不追求自己推导和实现",
   "current": {
     "chain_index": 1,
     "chain_name": "位置精度链",
-    "day": 2,
+    "day": 3,
     "layers": [
       "指令从哪来：上位机 / PLC 下发的目标位置",
       "指令怎么传：总线（EtherCAT）到驱动器",
