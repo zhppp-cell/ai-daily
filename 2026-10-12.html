@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统训练台</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .stage{font-size:13px;color:var(--muted);margin-top:16px;padding:9px 13px;background:var(--mark);border-radius:8px}
+  .stage b{color:var(--text)}
+  section{margin-top:42px}
+  h2{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .block{padding:16px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .t{font-size:16px;font-weight:600;line-height:1.55}
+  .t a{color:var(--text);text-decoration:none}
+  .t a:hover{color:var(--link);text-decoration:underline;text-underline-offset:3px}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:14px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  .txt b, .txt strong{color:var(--text);font-weight:600}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;color:var(--text);background:var(--mark);border-radius:8px;padding:10px 13px}
+  .why{font-size:14px;color:var(--muted);margin-top:6px}
+  .why b{color:var(--text)}
+  .chain{margin-top:6px}
+  .chain div{font-size:13.5px;color:var(--muted);padding:5px 0}
+  .chain div.now{color:var(--text);font-weight:600}
+  .chain span{display:inline-block;width:18px;color:var(--faint);font-variant-numeric:tabular-nums}
+  footer{margin-top:52px;color:var(--faint);font-size:12.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>系统训练台</h1>
+    <div class="sub" id="date"></div>
+    <div class="stage" id="stage"></div>
+  </header>
+  <div id="body"></div>
+  <footer>
+    每天 30 分钟：任务 20 分钟 + AI 进展 3 分钟 + 回顾<br>
+    <a href="./history.html">往期任务 →</a> · <a href="./合集.md">全部合集 →</a> · 云端自动更新 · 做完把你的一句话判断发给我
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  "date": "2026-10-12 周一",
+  "chain": {
+    "name": "位置精度链",
+    "day": 4,
+    "layers": [
+      "指令从哪来：上位机 / PLC 下发的目标位置",
+      "指令怎么传：总线（EtherCAT）到驱动器",
+      "驱动器怎么执行：位置环 → 速度环 → 电流环 → PWM",
+      "电机怎么转：转矩 → 转子 → 传动机构",
+      "机械怎么到位：刚度、间隙、摩擦、预紧",
+      "位置怎么被测：编码器 / 光栅尺 → 分辨率 → 反馈",
+      "误差怎么成指标：定位精度、重复定位精度、反向差值、稳定性"
+    ]
+  },
+  "task": {
+    "title": "第1链第4层：电机怎么转——转矩→转子→传动机构",
+    "problem": "调台能走到位，靠的是电机把电流变成转矩、转子转起来、再经传动机构（丝杠/蜗轮/减速器）变成直线或角度位移。你要能判断：定位不准、最小步进走不动、模态测出异常峰，到底是电机、传动还是负载的问题。",
+    "metrics": [
+      "转矩不够时，最小步进会丢步或爬行，重复定位精度直接变差",
+      "传动机构有背隙/柔性，反向定位时会出现迟滞，重复精度不对称",
+      "转子惯量与负载惯量不匹配，模态测试会出现低频共振峰",
+      "热耗数据异常升高，常是传动摩擦大或电机长期堵转所致"
+    ],
+    "fail": [
+      "最小步进走不动或丢步 → 先怀疑转矩余量不足或传动摩擦大",
+      "反向重复定位精度差、有迟滞 → 先怀疑传动背隙或联轴器柔性",
+      "模态测试出现低频异常峰 → 先怀疑惯量不匹配或传动刚度低",
+      "热耗突然升高、电机发烫 → 先怀疑传动卡涩或电机长期堵转"
+    ],
+    "ask": [
+      "这台调台电机额定转矩和峰值转矩是多少？安全余量留了多少？",
+      "传动链背隙和刚度指标是多少？反向定位时怎么补偿？",
+      "转子惯量和负载惯量比是多少？对模态测试有什么影响？"
+    ],
+    "act": "今天去设备上做一件事：手动让调台走最小步进，用千分表或编码器读数记录正向和反向各走10步的实际位移。对比正向和反向的差值，如果反向明显少走或迟滞，说明传动背隙或柔性在起作用。把正向、反向两组数记下来，再查一下这台调台的热耗数据，看走最小步进时热耗有没有异常升高。",
+    "goal": "能说出调台定位不准时，先分清楚是电机转矩、传动背隙还是惯量匹配的问题。"
+  },
+  "ai": [
+    {
+      "t": "500B tokens 之后：让 AI 智能体反编译一款第一人称射击游戏",
+      "url": "https://momo5502.com/posts/2026-10-09-game-decompilation/",
+      "d": "作者用约 5000 亿 token 的算力让 AI 智能体自动把一款 FPS 游戏反编译成可读源码，展示了当前智能体在长周期、大代码库逆向工程上的能力边界。",
+      "why": "这条直接对应你「能判断、能提问、能验收」的目标：反编译本质是把二进制黑盒还原成可理解的结构，和你做模态测试、定位精度测试时「从数据反推系统行为」是同一类思维。你可以借此判断 AI 智能体目前能处理多复杂的代码/逻辑逆向，未来若用于分析光刻机控制程序（Codesys/ST）或测试脚本的自动解读、异常溯源，验收标准该定在哪。"
+    },
+    {
+      "t": "Plimsoll：为 AI 智能体写的代码提供自托管沙箱",
+      "url": "https://github.com/plimsollmark/plimsoll",
+      "d": "一个自托管的沙箱工具，专门用来安全运行 AI 智能体生成的代码，限制其权限和影响范围。",
+      "why": "你日常接触 Codesys/ST 程序和伺服控制，最怕的就是 AI 生成的代码直接碰设备。这类沙箱是「AI 写代码」到「上机验证」之间的验收关卡，正好补上你横向宽度里「工具链安全层」这一环——知道有这种东西，就能在团队讨论 AI 辅助编程时提问：生成的 ST 逻辑有没有隔离验证环境，再决定能不能进真实调台。"
+    }
+  ],
+  "yesterday": "还没有反馈。做完今天这一步，把一句话判断发给我或写进 反馈.md，明天会显示在这里。"
+};
+
+function render(){
+  document.getElementById("date").textContent = DATA.date;
+  document.getElementById("stage").innerHTML =
+    `本周链条：<b>${DATA.chain.name}</b> · 第 <b>${DATA.chain.day}</b> / ${DATA.chain.layers.length} 层`;
+
+  let h = "";
+
+  h += `<section><h2>今天的任务 · 20 分钟</h2>`;
+  h += `<div class="block"><div class="t">${DATA.task.title}</div>
+    <div class="lbl">解决什么问题</div><div class="txt">${DATA.task.problem}</div>
+    <div class="lbl">关键指标</div><ul>${DATA.task.metrics.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">典型失效 → 先怀疑哪里</div><ul>${DATA.task.fail.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">该问专家什么</div><ul>${DATA.task.ask.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">用你手上的东西验证</div><div class="txt">${DATA.task.act}</div>
+    <div class="goal"><b>过关标准：</b>${DATA.task.goal}</div>
+  </div></section>`;
+
+  h += `<section><h2>AI 进展 · 3 分钟</h2>`;
+  DATA.ai.forEach(i => {
+    h += `<div class="block">
+      <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
+      <div class="txt">${i.d}</div>
+      <div class="why">${i.why}</div>
+    </div>`;
+  });
+  h += `</section>`;
+
+  h += `<section><h2>昨天的一句话</h2><div class="block"><div class="txt">${DATA.yesterday}</div></div></section>`;
+
+  h += `<section><h2>本周链条一览</h2><div class="chain">`;
+  DATA.chain.layers.forEach((l,i) => {
+    const now = (i+1) === DATA.chain.day ? ' class="now"' : "";
+    h += `<div${now}><span>${i+1}</span>${l}</div>`;
+  });
+  h += `</div></section>`;
+
+  document.getElementById("body").innerHTML = h;
+}
+render();
+</script>
+</body>
+</html>
