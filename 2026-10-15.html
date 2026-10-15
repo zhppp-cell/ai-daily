@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统训练台</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .stage{font-size:13px;color:var(--muted);margin-top:16px;padding:9px 13px;background:var(--mark);border-radius:8px}
+  .stage b{color:var(--text)}
+  section{margin-top:42px}
+  h2{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .block{padding:16px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .t{font-size:16px;font-weight:600;line-height:1.55}
+  .t a{color:var(--text);text-decoration:none}
+  .t a:hover{color:var(--link);text-decoration:underline;text-underline-offset:3px}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:14px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  .txt b, .txt strong{color:var(--text);font-weight:600}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;color:var(--text);background:var(--mark);border-radius:8px;padding:10px 13px}
+  .why{font-size:14px;color:var(--muted);margin-top:6px}
+  .why b{color:var(--text)}
+  .chain{margin-top:6px}
+  .chain div{font-size:13.5px;color:var(--muted);padding:5px 0}
+  .chain div.now{color:var(--text);font-weight:600}
+  .chain span{display:inline-block;width:18px;color:var(--faint);font-variant-numeric:tabular-nums}
+  footer{margin-top:52px;color:var(--faint);font-size:12.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>系统训练台</h1>
+    <div class="sub" id="date"></div>
+    <div class="stage" id="stage"></div>
+  </header>
+  <div id="body"></div>
+  <footer>
+    每天 30 分钟：任务 20 分钟 + AI 进展 3 分钟 + 回顾<br>
+    <a href="./history.html">往期任务 →</a> · <a href="./合集.md">全部合集 →</a> · 云端自动更新 · 做完把你的一句话判断发给我
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  "date": "2026-10-15 周四",
+  "chain": {
+    "name": "位置精度链",
+    "day": 7,
+    "layers": [
+      "指令从哪来：上位机 / PLC 下发的目标位置",
+      "指令怎么传：总线（EtherCAT）到驱动器",
+      "驱动器怎么执行：位置环 → 速度环 → 电流环 → PWM",
+      "电机怎么转：转矩 → 转子 → 传动机构",
+      "机械怎么到位：刚度、间隙、摩擦、预紧",
+      "位置怎么被测：编码器 / 光栅尺 → 分辨率 → 反馈",
+      "误差怎么成指标：定位精度、重复定位精度、反向差值、稳定性"
+    ]
+  },
+  "task": {
+    "title": "位置精度链 · 第 7 层：误差怎么成指标：定位精度、重复定位精度、反向差值、稳定性",
+    "problem": "今天模型通道没跑通，只给出这一层的位置和问题范围，供你先建立印象。",
+    "metrics": [
+      "这一层在整条链里负责什么，输入是什么、输出是什么",
+      "它最常引起什么现象（精度差、重复性差、还是漂移）",
+      "如果它出问题，你在数据上会先看到什么"
+    ],
+    "fail": [
+      "数据整体偏移 → 先看这一层之前的基准或标定",
+      "重复性突然变差 → 先看这一层有没有松动、温漂或噪声",
+      "现象只在某个方向出现 → 先怀疑这一层有方向相关的间隙或摩擦"
+    ],
+    "ask": [
+      "这一层的规格书/参数表在哪？关键指标是多少？",
+      "这一层出过什么现场问题，最后是怎么定位的？"
+    ],
+    "act": "把这一层的名字写下来，然后在你手上的设备或数据里找出一个能对应上的具体物件或读数。",
+    "goal": "能用一句话说清这一层在链条里的作用，以及它最可能带来的误差现象。"
+  },
+  "ai": [
+    {
+      "t": "Containment and monitoring failures are to blame for AI hacking reports: experts",
+      "url": "https://www.csoonline.com/article/4234854/ai-agents-arent-going-rogue-frontier-labs-are-skipping-security-basics.html",
+      "d": "今天模型通道没跑通，只保留条目，说明暂缺。",
+      "why": ""
+    },
+    {
+      "t": "Banks are now trying to offload the AI data center debt they just underwrote",
+      "url": "https://startupfortune.com/banks-are-now-trying-to-offload-the-ai-data-center-debt-they-just-underwrote/",
+      "d": "今天模型通道没跑通，只保留条目，说明暂缺。",
+      "why": ""
+    }
+  ],
+  "yesterday": "还没有反馈。做完今天这一步，把一句话判断发给我或写进 反馈.md，明天会显示在这里。"
+};
+
+function render(){
+  document.getElementById("date").textContent = DATA.date;
+  document.getElementById("stage").innerHTML =
+    `本周链条：<b>${DATA.chain.name}</b> · 第 <b>${DATA.chain.day}</b> / ${DATA.chain.layers.length} 层`;
+
+  let h = "";
+
+  h += `<section><h2>今天的任务 · 20 分钟</h2>`;
+  h += `<div class="block"><div class="t">${DATA.task.title}</div>
+    <div class="lbl">解决什么问题</div><div class="txt">${DATA.task.problem}</div>
+    <div class="lbl">关键指标</div><ul>${DATA.task.metrics.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">典型失效 → 先怀疑哪里</div><ul>${DATA.task.fail.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">该问专家什么</div><ul>${DATA.task.ask.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">用你手上的东西验证</div><div class="txt">${DATA.task.act}</div>
+    <div class="goal"><b>过关标准：</b>${DATA.task.goal}</div>
+  </div></section>`;
+
+  h += `<section><h2>AI 进展 · 3 分钟</h2>`;
+  DATA.ai.forEach(i => {
+    h += `<div class="block">
+      <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
+      <div class="txt">${i.d}</div>
+      <div class="why">${i.why}</div>
+    </div>`;
+  });
+  h += `</section>`;
+
+  h += `<section><h2>昨天的一句话</h2><div class="block"><div class="txt">${DATA.yesterday}</div></div></section>`;
+
+  h += `<section><h2>本周链条一览</h2><div class="chain">`;
+  DATA.chain.layers.forEach((l,i) => {
+    const now = (i+1) === DATA.chain.day ? ' class="now"' : "";
+    h += `<div${now}><span>${i+1}</span>${l}</div>`;
+  });
+  h += `</div></section>`;
+
+  document.getElementById("body").innerHTML = h;
+}
+render();
+</script>
+</body>
+</html>
