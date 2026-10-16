@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统训练台</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .stage{font-size:13px;color:var(--muted);margin-top:16px;padding:9px 13px;background:var(--mark);border-radius:8px}
+  .stage b{color:var(--text)}
+  section{margin-top:42px}
+  h2{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .block{padding:16px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .t{font-size:16px;font-weight:600;line-height:1.55}
+  .t a{color:var(--text);text-decoration:none}
+  .t a:hover{color:var(--link);text-decoration:underline;text-underline-offset:3px}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:14px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  .txt b, .txt strong{color:var(--text);font-weight:600}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;color:var(--text);background:var(--mark);border-radius:8px;padding:10px 13px}
+  .why{font-size:14px;color:var(--muted);margin-top:6px}
+  .why b{color:var(--text)}
+  .chain{margin-top:6px}
+  .chain div{font-size:13.5px;color:var(--muted);padding:5px 0}
+  .chain div.now{color:var(--text);font-weight:600}
+  .chain span{display:inline-block;width:18px;color:var(--faint);font-variant-numeric:tabular-nums}
+  footer{margin-top:52px;color:var(--faint);font-size:12.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>系统训练台</h1>
+    <div class="sub" id="date"></div>
+    <div class="stage" id="stage"></div>
+  </header>
+  <div id="body"></div>
+  <footer>
+    每天 30 分钟：任务 20 分钟 + AI 进展 3 分钟 + 回顾<br>
+    <a href="./history.html">往期任务 →</a> · <a href="./合集.md">全部合集 →</a> · 云端自动更新 · 做完把你的一句话判断发给我
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  "date": "2026-10-16 周五",
+  "chain": {
+    "name": "GitHub 协作链",
+    "day": 1,
+    "layers": [
+      "提交与历史：工作是怎么被一条条记录下来的，为什么能回退比记得住重要",
+      "分支与同步：为什么会「没拉就先推不上去」",
+      "权限与密钥：Token 与 scope，为什么有些操作做不了",
+      "Issue：把要做的事变成可追踪、可关闭的条目",
+      "Pull Request 与 Review：别人（含 AI）改你的文件，你审差异再合并",
+      "Actions：让机器替你在云端定时干活",
+      "和 AI 配合的三条铁律：先开分支 / 改完看差异 / 随时能退回"
+    ]
+  },
+  "task": {
+    "title": "第 2 链·第 1 层：提交与历史——为什么能回退比记得住重要",
+    "problem": "你调完待测镜调台，重复定位精度从 2μm 变到 5μm。你记得改过 FOC 参数和 ST 程序，但记不清顺序，也回不到昨天那版。没有提交历史，设备状态就变成一笔糊涂账。",
+    "metrics": [
+      "每次改参数/程序/接线，都有一条独立记录：谁、何时、改了什么、为什么",
+      "任意两个记录之间能一键对比差异，不用靠回忆",
+      "能回到任意一条历史记录对应的完整状态，包括 ST 程序和伺服参数"
+    ],
+    "fail": [
+      "调台精度突然变差 → 先怀疑最近一次提交改了什么，而不是先拆机械",
+      "模态测试结果和上周对不上 → 先查测试前是否有人动过伺服或 ST 程序",
+      "热耗数据异常 → 先看当天有没有未记录的参数变更"
+    ],
+    "ask": [
+      "这套调台控制程序的版本管理，你们建议用 Git 还是内部工具？",
+      "伺服参数和 ST 程序能放在同一个提交里一起回退吗？",
+      "热耗和精度测试数据，你们通常怎么和当时的程序版本绑定？"
+    ],
+    "act": "今天在电脑上建一个文件夹，命名「调台_2025_日期」。把当前 ST 程序、FOC 参数表、最近一次重复定位精度和热耗数据复制进去。再写一个「说明.txt」：今天改了什么、为什么改、改完精度是多少。以后每次动设备前，先复制一份新日期文件夹。这就是最土但最管用的提交历史。",
+    "goal": "你能说出最近一次调台改动前后，精度和热耗各是多少，并且能找回改动前的程序版本。"
+  },
+  "ai": [
+    {
+      "t": "用AI逆向工程硬件",
+      "url": "https://blogs.gnome.org/uraeus/2026/10/15/aiandreverseengineerhardware/",
+      "d": "文章讨论如何用AI辅助分析硬件，比如从信号、固件或电路行为中推断结构和工作原理。",
+      "why": "你日常在测转台、调台、伺服和Codesys程序，这条正好挂在「系统级判断」链条上：以后遇到陌生板卡、黑盒部件或供应商不给细节时，可以判断AI逆向能帮你问到什么程度、哪些结论可验收、哪些必须实测。"
+    },
+    {
+      "t": "Meta发布可在Mac上运行的开源权重AI模型",
+      "url": "https://techcrunch.com/2026/10/15/meta-launches-an-open-weight-model-that-runs-on-macs/",
+      "d": "Meta推出可在Mac本地运行的开源权重模型，意味着端侧AI能力继续下放到个人设备。",
+      "why": "对测试工程师来说，这关系到「本地能跑什么、数据不出设备」的能力边界：你以后可以用本地模型整理测试日志、热耗数据、LMS模态结果，判断哪些分析能在工位完成而不依赖云端。"
+    }
+  ],
+  "yesterday": "还没有反馈。做完今天这一步，把一句话判断发给我或写进 反馈.md，明天会显示在这里。"
+};
+
+function render(){
+  document.getElementById("date").textContent = DATA.date;
+  document.getElementById("stage").innerHTML =
+    `本周链条：<b>${DATA.chain.name}</b> · 第 <b>${DATA.chain.day}</b> / ${DATA.chain.layers.length} 层`;
+
+  let h = "";
+
+  h += `<section><h2>今天的任务 · 20 分钟</h2>`;
+  h += `<div class="block"><div class="t">${DATA.task.title}</div>
+    <div class="lbl">解决什么问题</div><div class="txt">${DATA.task.problem}</div>
+    <div class="lbl">关键指标</div><ul>${DATA.task.metrics.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">典型失效 → 先怀疑哪里</div><ul>${DATA.task.fail.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">该问专家什么</div><ul>${DATA.task.ask.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">用你手上的东西验证</div><div class="txt">${DATA.task.act}</div>
+    <div class="goal"><b>过关标准：</b>${DATA.task.goal}</div>
+  </div></section>`;
+
+  h += `<section><h2>AI 进展 · 3 分钟</h2>`;
+  DATA.ai.forEach(i => {
+    h += `<div class="block">
+      <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
+      <div class="txt">${i.d}</div>
+      <div class="why">${i.why}</div>
+    </div>`;
+  });
+  h += `</section>`;
+
+  h += `<section><h2>昨天的一句话</h2><div class="block"><div class="txt">${DATA.yesterday}</div></div></section>`;
+
+  h += `<section><h2>本周链条一览</h2><div class="chain">`;
+  DATA.chain.layers.forEach((l,i) => {
+    const now = (i+1) === DATA.chain.day ? ' class="now"' : "";
+    h += `<div${now}><span>${i+1}</span>${l}</div>`;
+  });
+  h += `</div></section>`;
+
+  document.getElementById("body").innerHTML = h;
+}
+render();
+</script>
+</body>
+</html>
