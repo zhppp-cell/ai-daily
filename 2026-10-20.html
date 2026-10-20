@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统训练台</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .stage{font-size:13px;color:var(--muted);margin-top:16px;padding:9px 13px;background:var(--mark);border-radius:8px}
+  .stage b{color:var(--text)}
+  section{margin-top:42px}
+  h2{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .block{padding:16px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .t{font-size:16px;font-weight:600;line-height:1.55}
+  .t a{color:var(--text);text-decoration:none}
+  .t a:hover{color:var(--link);text-decoration:underline;text-underline-offset:3px}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:14px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  .txt b, .txt strong{color:var(--text);font-weight:600}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;color:var(--text);background:var(--mark);border-radius:8px;padding:10px 13px}
+  .why{font-size:14px;color:var(--muted);margin-top:6px}
+  .why b{color:var(--text)}
+  .chain{margin-top:6px}
+  .chain div{font-size:13.5px;color:var(--muted);padding:5px 0}
+  .chain div.now{color:var(--text);font-weight:600}
+  .chain span{display:inline-block;width:18px;color:var(--faint);font-variant-numeric:tabular-nums}
+  footer{margin-top:52px;color:var(--faint);font-size:12.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>系统训练台</h1>
+    <div class="sub" id="date"></div>
+    <div class="stage" id="stage"></div>
+  </header>
+  <div id="body"></div>
+  <footer>
+    每天 30 分钟：任务 20 分钟 + AI 进展 3 分钟 + 回顾<br>
+    <a href="./history.html">往期任务 →</a> · <a href="./合集.md">全部合集 →</a> · 云端自动更新 · 做完把你的一句话判断发给我
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  "date": "2026-10-20 周二",
+  "chain": {
+    "name": "GitHub 协作链",
+    "day": 5,
+    "layers": [
+      "提交与历史：工作是怎么被一条条记录下来的，为什么能回退比记得住重要",
+      "分支与同步：为什么会「没拉就先推不上去」",
+      "权限与密钥：Token 与 scope，为什么有些操作做不了",
+      "Issue：把要做的事变成可追踪、可关闭的条目",
+      "Pull Request 与 Review：别人（含 AI）改你的文件，你审差异再合并",
+      "Actions：让机器替你在云端定时干活",
+      "和 AI 配合的三条铁律：先开分支 / 改完看差异 / 随时能退回"
+    ]
+  },
+  "task": {
+    "title": "第2链·第5层：Pull Request 与 Review——审差异再合并",
+    "problem": "同事或 AI 直接改了你仓库里的调台测试脚本/数据表，你要在合并前看懂差异：改了哪几行、会不会动到重复定位精度的判定阈值、最小步进记录格式、Codesys 导出参数或热耗字段。看不懂就合并，等于把设备验收证据交给别人。",
+    "metrics": [
+      "差异里每处改动能说出：改了什么、影响哪个测试项",
+      "能判断是否碰到阈值/字段名/单位，而非只看代码好不好看",
+      "合并前能写一条具体评论或明确批准理由",
+      "合并后能回溯这次改动对应哪台调台、哪批数据"
+    ],
+    "fail": [
+      "差异全是红色大段重写 → 先怀疑格式化或AI整文件重写，不是真改动",
+      "阈值数字变了但没说明 → 先怀疑有人为让测试通过而放宽判据",
+      "字段名从um改成mm → 先怀疑单位不一致，重复定位精度会差1000倍",
+      "新增文件没进版本库 → 先怀疑数据/配置被本地覆盖，合并后无法复现"
+    ],
+    "ask": [
+      "这次改动对应哪台调台、哪次模态或热耗测试？",
+      "重复定位精度和最小步进的判定阈值为什么改？有依据吗？",
+      "Codesys/ST 参数导出格式变了，旧数据还能对比吗？"
+    ],
+    "act": "打开你最近一次调台测试的仓库，找一条别人（或AI）提交的改动：只看差异页，用纸写下三件事——改了哪几行、碰到哪个测试项（重复定位精度/最小步进/模态/热耗）、你有没有把握批准。没把握就在评论里写一句具体问题再合并。",
+    "goal": "能对一条真实差异说出改了什么、影响哪个测试项，并给出批准或一条具体质疑。"
+  },
+  "ai": [
+    {
+      "t": "Mercury 3：大规模扩散语言模型",
+      "url": "https://www.inceptionlabs.ai/blog/introducing-mercury-3",
+      "d": "Inception Labs 发布 Mercury 3，把扩散式（非自回归）生成扩展到更大规模，主打高吞吐、低延迟的文本生成。",
+      "why": "这是「模型能力边界」的变化：扩散式生成在延迟和吞吐上可能明显优于自回归模型。你正在学系统工程师式的横向判断，可以先记住一个验收问题——同样的测试报告生成、日志归纳任务，换用这类模型后延迟、成本、输出稳定性是否真的更好，而不是只看榜单分数。"
+    },
+    {
+      "t": "Laminar：用 RL 训练出能找出 agent 轨迹错误的模型",
+      "url": "https://news.ycombinator.com/item?id=50154029",
+      "d": "Laminar（YC S24）发布一个经强化学习训练的模型，专门自动检查 AI agent 执行轨迹中的错误。",
+      "why": "这正好对应你「能验收」这一层能力：以后你写的 Codesys/ST 测试脚本、数据采集流程如果交给 agent 跑，你需要判断它哪一步做错了。这类「轨迹审查」工具就是验收环节的抓手——你可以先了解它的检查维度（工具调用、状态一致性），再决定是否引入自己的测试链路。"
+    }
+  ],
+  "yesterday": "还没有反馈。做完今天这一步，把一句话判断发给我或写进 反馈.md，明天会显示在这里。"
+};
+
+function render(){
+  document.getElementById("date").textContent = DATA.date;
+  document.getElementById("stage").innerHTML =
+    `本周链条：<b>${DATA.chain.name}</b> · 第 <b>${DATA.chain.day}</b> / ${DATA.chain.layers.length} 层`;
+
+  let h = "";
+
+  h += `<section><h2>今天的任务 · 20 分钟</h2>`;
+  h += `<div class="block"><div class="t">${DATA.task.title}</div>
+    <div class="lbl">解决什么问题</div><div class="txt">${DATA.task.problem}</div>
+    <div class="lbl">关键指标</div><ul>${DATA.task.metrics.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">典型失效 → 先怀疑哪里</div><ul>${DATA.task.fail.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">该问专家什么</div><ul>${DATA.task.ask.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">用你手上的东西验证</div><div class="txt">${DATA.task.act}</div>
+    <div class="goal"><b>过关标准：</b>${DATA.task.goal}</div>
+  </div></section>`;
+
+  h += `<section><h2>AI 进展 · 3 分钟</h2>`;
+  DATA.ai.forEach(i => {
+    h += `<div class="block">
+      <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
+      <div class="txt">${i.d}</div>
+      <div class="why">${i.why}</div>
+    </div>`;
+  });
+  h += `</section>`;
+
+  h += `<section><h2>昨天的一句话</h2><div class="block"><div class="txt">${DATA.yesterday}</div></div></section>`;
+
+  h += `<section><h2>本周链条一览</h2><div class="chain">`;
+  DATA.chain.layers.forEach((l,i) => {
+    const now = (i+1) === DATA.chain.day ? ' class="now"' : "";
+    h += `<div${now}><span>${i+1}</span>${l}</div>`;
+  });
+  h += `</div></section>`;
+
+  document.getElementById("body").innerHTML = h;
+}
+render();
+</script>
+</body>
+</html>
