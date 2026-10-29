@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统训练台</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .stage{font-size:13px;color:var(--muted);margin-top:16px;padding:9px 13px;background:var(--mark);border-radius:8px}
+  .stage b{color:var(--text)}
+  section{margin-top:42px}
+  h2{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .block{padding:16px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .t{font-size:16px;font-weight:600;line-height:1.55}
+  .t a{color:var(--text);text-decoration:none}
+  .t a:hover{color:var(--link);text-decoration:underline;text-underline-offset:3px}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:14px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  .txt b, .txt strong{color:var(--text);font-weight:600}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;color:var(--text);background:var(--mark);border-radius:8px;padding:10px 13px}
+  .why{font-size:14px;color:var(--muted);margin-top:6px}
+  .why b{color:var(--text)}
+  .chain{margin-top:6px}
+  .chain div{font-size:13.5px;color:var(--muted);padding:5px 0}
+  .chain div.now{color:var(--text);font-weight:600}
+  .chain span{display:inline-block;width:18px;color:var(--faint);font-variant-numeric:tabular-nums}
+  footer{margin-top:52px;color:var(--faint);font-size:12.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>系统训练台</h1>
+    <div class="sub" id="date"></div>
+    <div class="stage" id="stage"></div>
+  </header>
+  <div id="body"></div>
+  <footer>
+    每天 30 分钟：任务 20 分钟 + AI 进展 3 分钟 + 回顾<br>
+    <a href="./history.html">往期任务 →</a> · <a href="./合集.md">全部合集 →</a> · 云端自动更新 · 做完把你的一句话判断发给我
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  "date": "2026-10-29 周四",
+  "chain": {
+    "name": "运动控制链",
+    "day": 7,
+    "layers": [
+      "第1层 指令与轨迹输入：上位机/PLC按工艺给出位置、速度、加速度与同步触发指令，需判断指令格式、刷新率与轨迹规划是否匹配任务节拍。",
+      "第2层 控制器与运动程序：Codesys/ST程序把指令解析为伺服设定值并管理使能、限位、回零与插补，需能读懂逻辑框架、提问异常处理与状态机是否完备。",
+      "第3层 伺服驱动与电流环：驱动器将速度/转矩设定转为FOC无刷电机三相电流，需判断增益、带宽、限流与母线/热耗是否在安全裕度内。",
+      "第4层 电机与机械传动：电机经联轴器/丝杠/转台减速机构把转矩转为运动，需识别背隙、柔度、惯量匹配与摩擦对定位的影响。",
+      "第5层 传感与反馈：编码器/光栅/激光干涉仪把实际位置反馈回控制器形成闭环，需判断分辨率、安装误差、反馈延迟与闭环结构是否满足精度要求。",
+      "第6层 测量与数据采集：用激光干涉仪、LMS模态测试与热耗数据采集定位精度、重复定位精度、最小步进与动态特性，需能设计测点、判断数据可信度与分离误差源。",
+      "第7层 指标验收与系统结论：把定位/重复定位精度、最小步进、模态频率与热漂移汇总为验收结论，需能对照规格判断合格性、定位瓶颈层并提出改进与复测方案。"
+    ]
+  },
+  "task": {
+    "title": "第3链第7层：指标验收与系统结论——把调台数据变成合格/不合格结论",
+    "problem": "你手上有定位/重复定位精度、最小步进、模态频率、热耗几组数，但怎么对照规格判合格、不合格时先怀疑哪一层、怎么提改进和复测？本单元练一张验收汇总表。",
+    "metrics": [
+      "定位精度看最大偏差，重复定位精度看多次回同一点的散布，两者分开判。",
+      "最小步进看指令走一步后实际动没动、动多少，判断分辨率够不够。",
+      "模态频率看一阶共振是否远离伺服带宽，热漂移看温升后精度掉多少。"
+    ],
+    "fail": [
+      "重复定位差但定位准 → 先怀疑反向间隙、导轨预紧或编码器重复性。",
+      "最小步进指令了不动 → 先怀疑分辨率、摩擦死区或伺服增益太低。",
+      "一阶模态靠近伺服带宽 → 先怀疑结构刚性不足或增益调太高。",
+      "热起来后精度漂 → 先怀疑热膨胀未补偿或热源离测量点太近。"
+    ],
+    "ask": [
+      "验收规格里定位与重复定位是分别给限，还是只给综合值？",
+      "最小步进指标是在空载还是带载、什么速度下测的？",
+      "热漂移验收的温升条件和稳定时间怎么定？"
+    ],
+    "act": "打开你最近一次调台测试记录，做一张四行表：定位精度、重复定位精度、最小步进、一阶模态频率，每行填实测值、规格限、合格/不合格。再补一行热漂移：温升几度后精度变化多少。不合格的行，写下你先怀疑的那一层（机械/伺服/程序/热），明天找对应数据验证。",
+    "goal": "能独立填出五行验收表，并对每个不合格项说出先查哪一层、下一步复测什么。"
+  },
+  "ai": [
+    {
+      "t": "Cursor 发布 Agent SDK",
+      "url": "https://cursor.com/blog/agent-sdk",
+      "d": "Cursor 把其编码智能体的能力以 SDK 形式开放，允许开发者把 Agent 嵌入自己的工具链和自动化流程，而不只是在 IDE 里对话。",
+      "why": "这是「能力边界变化」：Agent 从聊天窗口变成可被集成的组件。对你意味着，你不需要自己写完整程序，但可以判断「哪些测试流程值得交给 Agent 自动跑」——比如把重复定位精度测试的记录整理、Codesys/ST 代码的静态检查、LMS 模态测试报告的模板化生成，做成可验收的小自动化；面试系统工程师时，你能说清「哪里该用 Agent、哪里必须人工判据」，这正是横向宽度里「能判断、能验收」的那一层。"
+    },
+    {
+      "t": "Anthropic 推出工具，让企业看清 AI 支出买到了什么",
+      "url": "https://techcrunch.com/2026/10/28/anthropic-just-launched-tools-to-show-companies-what-their-ai-spending-is-buying/",
+      "d": "Anthropic 上线用量与效果可视化工具，帮助企业把 AI 调用量、成本和实际产出对应起来，判断投入是否值得。",
+      "why": "这是「能力边界变化」的度量侧：AI 从「用了没有」进入「用出了什么、值不值」的阶段。对你这个测试工程师，意义在于把「AI 辅助」当成一个被测系统来看——你日常就在做定位精度、重复定位精度的量化验收，这套思路可以直接迁移：给团队里的 AI 辅助测试流程定义指标（漏检率、返工率、人工复核占比），用数据判断该保留还是砍掉。系统工程师的核心动作之一就是「用可测量的方式验收」，这条正好挂在你已有的测试思维链条上。"
+    }
+  ],
+  "yesterday": "还没有反馈。做完今天这一步，把一句话判断发给我或写进 反馈.md，明天会显示在这里。"
+};
+
+function render(){
+  document.getElementById("date").textContent = DATA.date;
+  document.getElementById("stage").innerHTML =
+    `本周链条：<b>${DATA.chain.name}</b> · 第 <b>${DATA.chain.day}</b> / ${DATA.chain.layers.length} 层`;
+
+  let h = "";
+
+  h += `<section><h2>今天的任务 · 20 分钟</h2>`;
+  h += `<div class="block"><div class="t">${DATA.task.title}</div>
+    <div class="lbl">解决什么问题</div><div class="txt">${DATA.task.problem}</div>
+    <div class="lbl">关键指标</div><ul>${DATA.task.metrics.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">典型失效 → 先怀疑哪里</div><ul>${DATA.task.fail.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">该问专家什么</div><ul>${DATA.task.ask.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">用你手上的东西验证</div><div class="txt">${DATA.task.act}</div>
+    <div class="goal"><b>过关标准：</b>${DATA.task.goal}</div>
+  </div></section>`;
+
+  h += `<section><h2>AI 进展 · 3 分钟</h2>`;
+  DATA.ai.forEach(i => {
+    h += `<div class="block">
+      <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
+      <div class="txt">${i.d}</div>
+      <div class="why">${i.why}</div>
+    </div>`;
+  });
+  h += `</section>`;
+
+  h += `<section><h2>昨天的一句话</h2><div class="block"><div class="txt">${DATA.yesterday}</div></div></section>`;
+
+  h += `<section><h2>本周链条一览</h2><div class="chain">`;
+  DATA.chain.layers.forEach((l,i) => {
+    const now = (i+1) === DATA.chain.day ? ' class="now"' : "";
+    h += `<div${now}><span>${i+1}</span>${l}</div>`;
+  });
+  h += `</div></section>`;
+
+  document.getElementById("body").innerHTML = h;
+}
+render();
+</script>
+</body>
+</html>
