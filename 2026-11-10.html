@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统训练台</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .stage{font-size:13px;color:var(--muted);margin-top:16px;padding:9px 13px;background:var(--mark);border-radius:8px}
+  .stage b{color:var(--text)}
+  section{margin-top:42px}
+  h2{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .block{padding:16px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .t{font-size:16px;font-weight:600;line-height:1.55}
+  .t a{color:var(--text);text-decoration:none}
+  .t a:hover{color:var(--link);text-decoration:underline;text-underline-offset:3px}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:14px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  .txt b, .txt strong{color:var(--text);font-weight:600}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;color:var(--text);background:var(--mark);border-radius:8px;padding:10px 13px}
+  .why{font-size:14px;color:var(--muted);margin-top:6px}
+  .why b{color:var(--text)}
+  .chain{margin-top:6px}
+  .chain div{font-size:13.5px;color:var(--muted);padding:5px 0}
+  .chain div.now{color:var(--text);font-weight:600}
+  .chain span{display:inline-block;width:18px;color:var(--faint);font-variant-numeric:tabular-nums}
+  footer{margin-top:52px;color:var(--faint);font-size:12.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>系统训练台</h1>
+    <div class="sub" id="date"></div>
+    <div class="stage" id="stage"></div>
+  </header>
+  <div id="body"></div>
+  <footer>
+    每天 30 分钟：任务 20 分钟 + AI 进展 3 分钟 + 回顾<br>
+    <a href="./history.html">往期任务 →</a> · <a href="./合集.md">全部合集 →</a> · 云端自动更新 · 做完把你的一句话判断发给我
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  "date": "2026-11-10 周二",
+  "chain": {
+    "name": "热链",
+    "day": 5,
+    "layers": [
+      "指令/输入层：上位机或Codesys/ST下发的目标位置、速度与使能指令，以及环境温度、负载与工况等外部输入条件。",
+      "驱动与执行层：FOC无刷伺服驱动器把指令转成电流/力矩，经电机与机械传动（丝杠/导轨/转台）推动待测镜调台运动，此处产生主要热耗。",
+      "热源与传热层：电机铜损铁损、驱动器损耗、摩擦与导轨发热经传导/对流/辐射在结构内形成温度场与热梯度。",
+      "结构变形层：温度场引起材料热膨胀与热应力，导致镜座、转台轴系与支撑结构的微小位移与姿态变化。",
+      "测量与传感层：用光栅/编码器、激光干涉、LMS模态与温度传感器采集位置、振动与温度数据，需关注采样同步与传感器自身温漂。",
+      "指标与误差层：把测得数据折算为定位精度、重复定位精度、最小步进与热漂移等指标，区分随机误差与热致系统性误差。",
+      "结论与验收层：对照系统热稳定性与精度规格判断是否达标，定位热链薄弱环节并提出改进或验收结论。"
+    ]
+  },
+  "task": {
+    "title": "热链第5层：测量与传感——数据怎么来、什么时候不可信",
+    "problem": "调台的位置、振动、温度数据来自光栅/编码器、激光干涉、LMS和温度传感器。你要能判断：采样是否同步、传感器自身温漂是否污染了重复定位精度和热耗结论。",
+    "metrics": [
+      "位置与振动/温度采样时间戳能对齐到同一时间轴，知道各通道采样率",
+      "重复定位精度测试前，光栅/干涉仪与温度传感器已按同一基准预热稳定",
+      "能说出激光干涉仪与光栅在调台行程内的读数偏差量级",
+      "模态测试中力锤/激振与响应通道同步触发，无可见时延"
+    ],
+    "fail": [
+      "重复定位数据随环境温度缓慢漂移 → 先怀疑传感器温漂或光栅热膨胀，不是伺服",
+      "LMS频响在低频段异常 → 先怀疑力与响应通道采样不同步",
+      "最小步进测不到预期台阶 → 先怀疑编码器分辨率或干涉仪死区，不是Codesys程序",
+      "热耗数据与定位误差对不上 → 先怀疑温度采样时刻与位置采样未对齐"
+    ],
+    "ask": [
+      "你们的激光干涉仪和光栅读数在调台全行程内偏差多少？补偿了吗？",
+      "LMS各通道采样率与触发同步方式是什么？时延多少？",
+      "温度传感器自身温漂指标是多少？安装位置代表镜座还是环境？"
+    ],
+    "act": "今天打开一份最近的重复定位精度原始数据，做两件事：①查位置与温度通道的时间戳是否同一时钟、采样率各多少；②把温度曲线与定位偏差曲线叠在同一时间轴，看偏差变大时温度是否同步变化。若同步，记录温漂量级（如每℃偏差多少微米），写进测试备注。",
+    "goal": "能指出自己数据里位置与温度是否同步采样，并说出温漂对重复定位精度的影响量级。"
+  },
+  "ai": [
+    {
+      "t": "DeepX 第二代芯片：5W 内跑 100B 参数推理",
+      "url": "https://www.eetimes.com/deepx-tapes-out-second-gen-chip-projects-6-7x-performance-gain-with-lpddr5x-pim/",
+      "d": "DeepX 发布第二代 LPU 芯片，采用 LPDDR5X 存内计算，宣称在低于 5W 功耗下可运行最高 100B 参数模型的推理，性能提升 6-7 倍。",
+      "why": "这是「算力/功耗边界」的变化，直接关系到你测试链条里的热耗数据：如果边缘端能以个位数瓦特跑大模型，未来光刻机这类设备的本地智能诊断、视觉检测、异常识别就可能从「上服务器」变成「进机台」，你作为测试工程师需要开始判断「这块板子/这个模块的功耗预算和散热余量能不能扛住本地推理负载」，也就是把热耗测试从「测静态功耗」扩展到「测动态推理负载下的热行为」。"
+    },
+    {
+      "t": "Claude Fable 5.2 发布，Artificial Analysis 得分 65 创新高",
+      "url": "https://www.anthropic.com/claude-fable-and-mythos-5-2",
+      "d": "Anthropic 发布 Fable 5.2 与 Mythos 5.2 新模型，Fable 5.2 在 Artificial Analysis 综合评测上拿到 65 分，为目前最高。",
+      "why": "模型能力上限抬升，意味着你「用 AI 辅助判断、提问、验收」这条横向学习路径的杠杆变强：比如让模型帮你读 Codesys/ST 程序逻辑、对照 LMS 模态测试报告找异常、把转台定位精度数据整理成可验收的判据，都能更快拿到「能提问」级别的输出；但要注意它仍是辅助，验收结论必须回到你自己的测试数据和标准上。"
+    }
+  ],
+  "yesterday": "还没有反馈。做完今天这一步，把一句话判断发给我或写进 反馈.md，明天会显示在这里。"
+};
+
+function render(){
+  document.getElementById("date").textContent = DATA.date;
+  document.getElementById("stage").innerHTML =
+    `本周链条：<b>${DATA.chain.name}</b> · 第 <b>${DATA.chain.day}</b> / ${DATA.chain.layers.length} 层`;
+
+  let h = "";
+
+  h += `<section><h2>今天的任务 · 20 分钟</h2>`;
+  h += `<div class="block"><div class="t">${DATA.task.title}</div>
+    <div class="lbl">解决什么问题</div><div class="txt">${DATA.task.problem}</div>
+    <div class="lbl">关键指标</div><ul>${DATA.task.metrics.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">典型失效 → 先怀疑哪里</div><ul>${DATA.task.fail.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">该问专家什么</div><ul>${DATA.task.ask.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">用你手上的东西验证</div><div class="txt">${DATA.task.act}</div>
+    <div class="goal"><b>过关标准：</b>${DATA.task.goal}</div>
+  </div></section>`;
+
+  h += `<section><h2>AI 进展 · 3 分钟</h2>`;
+  DATA.ai.forEach(i => {
+    h += `<div class="block">
+      <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
+      <div class="txt">${i.d}</div>
+      <div class="why">${i.why}</div>
+    </div>`;
+  });
+  h += `</section>`;
+
+  h += `<section><h2>昨天的一句话</h2><div class="block"><div class="txt">${DATA.yesterday}</div></div></section>`;
+
+  h += `<section><h2>本周链条一览</h2><div class="chain">`;
+  DATA.chain.layers.forEach((l,i) => {
+    const now = (i+1) === DATA.chain.day ? ' class="now"' : "";
+    h += `<div${now}><span>${i+1}</span>${l}</div>`;
+  });
+  h += `</div></section>`;
+
+  document.getElementById("body").innerHTML = h;
+}
+render();
+</script>
+</body>
+</html>
