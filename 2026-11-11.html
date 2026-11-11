@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统训练台</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .stage{font-size:13px;color:var(--muted);margin-top:16px;padding:9px 13px;background:var(--mark);border-radius:8px}
+  .stage b{color:var(--text)}
+  section{margin-top:42px}
+  h2{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .block{padding:16px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .t{font-size:16px;font-weight:600;line-height:1.55}
+  .t a{color:var(--text);text-decoration:none}
+  .t a:hover{color:var(--link);text-decoration:underline;text-underline-offset:3px}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:14px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  .txt b, .txt strong{color:var(--text);font-weight:600}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;color:var(--text);background:var(--mark);border-radius:8px;padding:10px 13px}
+  .why{font-size:14px;color:var(--muted);margin-top:6px}
+  .why b{color:var(--text)}
+  .chain{margin-top:6px}
+  .chain div{font-size:13.5px;color:var(--muted);padding:5px 0}
+  .chain div.now{color:var(--text);font-weight:600}
+  .chain span{display:inline-block;width:18px;color:var(--faint);font-variant-numeric:tabular-nums}
+  footer{margin-top:52px;color:var(--faint);font-size:12.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>系统训练台</h1>
+    <div class="sub" id="date"></div>
+    <div class="stage" id="stage"></div>
+  </header>
+  <div id="body"></div>
+  <footer>
+    每天 30 分钟：任务 20 分钟 + AI 进展 3 分钟 + 回顾<br>
+    <a href="./history.html">往期任务 →</a> · <a href="./合集.md">全部合集 →</a> · 云端自动更新 · 做完把你的一句话判断发给我
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  "date": "2026-11-11 周三",
+  "chain": {
+    "name": "热链",
+    "day": 6,
+    "layers": [
+      "指令/输入层：上位机或Codesys/ST下发的目标位置、速度与使能指令，以及环境温度、负载与工况等外部输入条件。",
+      "驱动与执行层：FOC无刷伺服驱动器把指令转成电流/力矩，经电机与机械传动（丝杠/导轨/转台）推动待测镜调台运动，此处产生主要热耗。",
+      "热源与传热层：电机铜损铁损、驱动器损耗、摩擦与导轨发热经传导/对流/辐射在结构内形成温度场与热梯度。",
+      "结构变形层：温度场引起材料热膨胀与热应力，导致镜座、转台轴系与支撑结构的微小位移与姿态变化。",
+      "测量与传感层：用光栅/编码器、激光干涉、LMS模态与温度传感器采集位置、振动与温度数据，需关注采样同步与传感器自身温漂。",
+      "指标与误差层：把测得数据折算为定位精度、重复定位精度、最小步进与热漂移等指标，区分随机误差与热致系统性误差。",
+      "结论与验收层：对照系统热稳定性与精度规格判断是否达标，定位热链薄弱环节并提出改进或验收结论。"
+    ]
+  },
+  "task": {
+    "title": "热链第6层：把测试数据折成指标，分清随机误差与热致系统误差",
+    "problem": "你手上有一组调台定位数据：多次到位值、最小步进响应、热耗与温度记录。今天要能把它们折成定位精度、重复定位精度、最小步进和热漂移四个指标，并判断哪些波动是随机的、哪些是热引起的系统性漂移。",
+    "metrics": [
+      "定位精度：多次到位均值与目标值的最大偏差；重复定位精度：同一目标多次到位的散布（标准差或极差）",
+      "最小步进：能稳定分辨并复现的最小指令增量，看信噪比而非单次跳变",
+      "热漂移：温度每升1°C或每单位热耗对应的到位均值单向偏移量",
+      "随机误差看散布不随温度/热耗走；系统误差看均值随温度或热耗单调走"
+    ],
+    "fail": [
+      "重复定位精度差但均值稳定 → 先怀疑伺服增益/机械间隙/编码器噪声，不是热",
+      "均值随热耗单调偏移 → 先怀疑丝杠/导轨/镜架热膨胀，查温度与热耗时间对齐",
+      "最小步进忽大忽小 → 先怀疑摩擦死区或ST程序里使能与滤波时序",
+      "模态测试后指标变差 → 先怀疑装夹刚度或传感器附加质量改变了边界条件"
+    ],
+    "ask": [
+      "你们的重复定位精度是按几次到位、什么统计口径给的？含不含热态？",
+      "最小步进指标是在冷态还是热平衡后测的？步进指令怎么给？",
+      "热漂移验收时温度测点在哪、热耗按什么工况折算？"
+    ],
+    "act": "翻出你最近一次调台定位测试的原始数据（至少同一目标重复10次到位值）和同步的热耗/温度记录。做三件事：1）算这10次的均值和极差，极差就是重复定位精度的粗估；2）把均值按时间排序，对照温度曲线看是否单调走；3）若均值随温度走而极差不变，标为热致系统误差；若极差大而均值稳，标为随机误差。把结论写进测试记录一行。",
+    "goal": "能用自己的数据算出重复定位精度粗值，并正确判断该波动是随机还是热致系统误差。"
+  },
+  "ai": [
+    {
+      "t": "Google Chrome 推出「现代 Web 指南」，帮助编码智能体摆脱 2019 年的 JS 写法",
+      "url": "https://github.com/GoogleChrome/modern-web-guidance",
+      "d": "Google Chrome 团队发布面向 AI 编码助手的现代 Web 原语指引，让智能体生成的代码跟上当前浏览器能力，而不是停留在过时的 JavaScript 模式。",
+      "why": "你日常用 Codesys/ST 写测试逻辑，也迟早会让 AI 帮你生成上位机、数据看板或测试脚本。这条说明「AI 写代码」的能力边界正在从「能写」转向「写得符合当前工程规范」——你作为验收方，需要能判断 AI 生成的代码是不是用了过时或已废弃的写法，这正是「能判断、能验收」那一层。"
+    },
+    {
+      "t": "Claude 推出白板、表格与数据功能",
+      "url": "https://claude.com/resources/articles/sheets-whiteboards-data",
+      "d": "Anthropic 为 Claude 增加白板、表格和数据三类工作界面，把对话式 AI 扩展到结构化的数据整理与可视化协作场景。",
+      "why": "你手上有转台定位精度、重复定位精度、最小步进、模态测试和热耗数据，这些天然是表格和趋势图。这条意味着 AI 工具正从「聊天」变成「能直接处理结构化测试数据」——你可以让它帮你把 LMS 导出的模态数据、热耗记录整理成对比表或异常清单，自己只做判断和验收，正好卡在系统工程师式横向宽度的「能提问、能验收」这一环。"
+    }
+  ],
+  "yesterday": "还没有反馈。做完今天这一步，把一句话判断发给我或写进 反馈.md，明天会显示在这里。"
+};
+
+function render(){
+  document.getElementById("date").textContent = DATA.date;
+  document.getElementById("stage").innerHTML =
+    `本周链条：<b>${DATA.chain.name}</b> · 第 <b>${DATA.chain.day}</b> / ${DATA.chain.layers.length} 层`;
+
+  let h = "";
+
+  h += `<section><h2>今天的任务 · 20 分钟</h2>`;
+  h += `<div class="block"><div class="t">${DATA.task.title}</div>
+    <div class="lbl">解决什么问题</div><div class="txt">${DATA.task.problem}</div>
+    <div class="lbl">关键指标</div><ul>${DATA.task.metrics.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">典型失效 → 先怀疑哪里</div><ul>${DATA.task.fail.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">该问专家什么</div><ul>${DATA.task.ask.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">用你手上的东西验证</div><div class="txt">${DATA.task.act}</div>
+    <div class="goal"><b>过关标准：</b>${DATA.task.goal}</div>
+  </div></section>`;
+
+  h += `<section><h2>AI 进展 · 3 分钟</h2>`;
+  DATA.ai.forEach(i => {
+    h += `<div class="block">
+      <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
+      <div class="txt">${i.d}</div>
+      <div class="why">${i.why}</div>
+    </div>`;
+  });
+  h += `</section>`;
+
+  h += `<section><h2>昨天的一句话</h2><div class="block"><div class="txt">${DATA.yesterday}</div></div></section>`;
+
+  h += `<section><h2>本周链条一览</h2><div class="chain">`;
+  DATA.chain.layers.forEach((l,i) => {
+    const now = (i+1) === DATA.chain.day ? ' class="now"' : "";
+    h += `<div${now}><span>${i+1}</span>${l}</div>`;
+  });
+  h += `</div></section>`;
+
+  document.getElementById("body").innerHTML = h;
+}
+render();
+</script>
+</body>
+</html>
