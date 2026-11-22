@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统训练台</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .stage{font-size:13px;color:var(--muted);margin-top:16px;padding:9px 13px;background:var(--mark);border-radius:8px}
+  .stage b{color:var(--text)}
+  section{margin-top:42px}
+  h2{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .block{padding:16px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .t{font-size:16px;font-weight:600;line-height:1.55}
+  .t a{color:var(--text);text-decoration:none}
+  .t a:hover{color:var(--link);text-decoration:underline;text-underline-offset:3px}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:14px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  .txt b, .txt strong{color:var(--text);font-weight:600}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;color:var(--text);background:var(--mark);border-radius:8px;padding:10px 13px}
+  .why{font-size:14px;color:var(--muted);margin-top:6px}
+  .why b{color:var(--text)}
+  .chain{margin-top:6px}
+  .chain div{font-size:13.5px;color:var(--muted);padding:5px 0}
+  .chain div.now{color:var(--text);font-weight:600}
+  .chain span{display:inline-block;width:18px;color:var(--faint);font-variant-numeric:tabular-nums}
+  footer{margin-top:52px;color:var(--faint);font-size:12.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>系统训练台</h1>
+    <div class="sub" id="date"></div>
+    <div class="stage" id="stage"></div>
+  </header>
+  <div id="body"></div>
+  <footer>
+    每天 30 分钟：任务 20 分钟 + AI 进展 3 分钟 + 回顾<br>
+    <a href="./history.html">往期任务 →</a> · <a href="./合集.md">全部合集 →</a> · 云端自动更新 · 做完把你的一句话判断发给我
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  "date": "2026-11-22 周日",
+  "chain": {
+    "name": "刚度与面形链",
+    "day": 3,
+    "layers": [
+      "第1层：系统输入指令与目标面形/位姿要求（给定工况、负载与精度指标，判断需求是否自洽可测）。",
+      "第2层：伺服驱动与调台运动链（FOC无刷伺服+转台/调台机构，判断力矩、带宽、最小步进能否支撑指令）。",
+      "第3层：机械结构刚度链（导轨、轴承、丝杠/柔性环节的静动刚度与模态，判断薄弱环节与共振风险）。",
+      "第4层：热-力耦合与热耗路径（热源、热变形对刚度与位姿的漂移，判断热稳定性是否达标）。",
+      "第5层：镜体支撑与面形传递（支撑点刚度/力分布如何映射到镜面面形，判断支撑方案是否合理）。",
+      "第6层：测量链（位移/角度传感器、LMS模态与定位重复性测试，判断测量分辨率、噪声与不确定度是否够用）。",
+      "第7层：指标与验收结论（定位精度、重复定位精度、面形PV/RMS与模态结果对照规格，判断能否验收及问题归因）。"
+    ]
+  },
+  "task": {
+    "title": "刚度与面形链·第3层：机械结构刚度链——找出调台的薄弱环节与共振风险",
+    "problem": "你的调台由导轨、轴承、丝杠/柔性环节串成一条刚度链，最软的一环决定整体静刚度，也决定模态测试里最先出现的共振峰。你不推导公式，但要能判断：重复定位精度差、最小步进走不动、模态低频峰，是链上哪一环软了。",
+    "metrics": [
+      "静刚度：看最小步进时指令走了、实际没动或回弹，判断该环节是否被弹性吃掉",
+      "动刚度/模态：LMS 低频峰（几十到几百 Hz）对应哪一环，峰越低越危险",
+      "重复定位精度：单向逼近与双向逼近差值大 → 怀疑反向间隙或柔性环节",
+      "热耗数据：连续运行后定位漂移增大 → 怀疑丝杠热伸长或轴承预紧变化"
+    ],
+    "fail": [
+      "最小步进指令走了但没动 → 先怀疑柔性环节或丝杠轴向刚度不足",
+      "重复定位双向差值大且随位置变 → 先怀疑导轨/轴承间隙或反向死区",
+      "LMS 低频峰随负载或位置漂移 → 先怀疑薄弱环节刚度随接触状态变化",
+      "连续跑热后精度变差 → 先怀疑丝杠热伸长或轴承预紧丢失"
+    ],
+    "ask": [
+      "这条刚度链里，供应商认为最软的一环是哪个？静刚度值多少？",
+      "模态低频峰对应哪个部件？该峰随预紧/负载怎么变？",
+      "丝杠热伸长补偿有没有做？轴承预紧靠什么保证？"
+    ],
+    "act": "今天翻一次最近的 LMS 模态报告：找出最低那个共振峰，记下频率和峰值；再对照同一天的最小步进测试记录，看步进走不动的位置是否靠近该峰对应的运动段。把两件事写在一行里：哪个环节、什么证据。",
+    "goal": "能指着模态最低峰和一条精度异常数据，说出最可疑的薄弱环节及下一步验证动作。"
+  },
+  "ai": [
+    {
+      "t": "AI声称解决167年历史的黎曼猜想——人类也同时宣称解决",
+      "url": "https://techcrunch.com/2026/11/20/ai-claimed-a-solution-to-the-167-year-old-riemann-hypothesis-and-a-human-did-too/",
+      "d": "AI与人类同时宣称攻克黎曼猜想，无论结果真伪，都标志着AI在纯数学推理上的能力边界正在被重新定义。",
+      "why": "你不需要推导公式，但需要判断“AI给出的结论是否可信”——这正是系统工程师式横向宽度的核心：面对AI输出的复杂推理结果，能提问“验证路径是什么、假设是否成立、边界条件在哪”，而不是盲信或盲拒。这条动态是你练习“能力边界判断力”的活教材。"
+    },
+    {
+      "t": "AI供应链安全：金丝雀令牌发现了什么",
+      "url": "https://www.dragos.com/blog/ai-supply-chain-security-canary-tokens",
+      "d": "用金丝雀令牌追踪AI供应链中的异常访问，揭示模型、数据、工具链各环节的隐蔽风险点。",
+      "why": "你日常接触Codesys/ST程序、LMS模态数据、热耗数据，这些都属于“被测系统的数据链”。金丝雀令牌的思路可以直接迁移：在调台测试数据流里埋标记，判断哪一层（采集、传输、存储、模型推理）出了问题。这是从“测一个部件”升级到“测一条链”的验收思维。"
+    }
+  ],
+  "yesterday": "还没有反馈。做完今天这一步，把一句话判断发给我或写进 反馈.md，明天会显示在这里。"
+};
+
+function render(){
+  document.getElementById("date").textContent = DATA.date;
+  document.getElementById("stage").innerHTML =
+    `本周链条：<b>${DATA.chain.name}</b> · 第 <b>${DATA.chain.day}</b> / ${DATA.chain.layers.length} 层`;
+
+  let h = "";
+
+  h += `<section><h2>今天的任务 · 20 分钟</h2>`;
+  h += `<div class="block"><div class="t">${DATA.task.title}</div>
+    <div class="lbl">解决什么问题</div><div class="txt">${DATA.task.problem}</div>
+    <div class="lbl">关键指标</div><ul>${DATA.task.metrics.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">典型失效 → 先怀疑哪里</div><ul>${DATA.task.fail.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">该问专家什么</div><ul>${DATA.task.ask.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">用你手上的东西验证</div><div class="txt">${DATA.task.act}</div>
+    <div class="goal"><b>过关标准：</b>${DATA.task.goal}</div>
+  </div></section>`;
+
+  h += `<section><h2>AI 进展 · 3 分钟</h2>`;
+  DATA.ai.forEach(i => {
+    h += `<div class="block">
+      <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
+      <div class="txt">${i.d}</div>
+      <div class="why">${i.why}</div>
+    </div>`;
+  });
+  h += `</section>`;
+
+  h += `<section><h2>昨天的一句话</h2><div class="block"><div class="txt">${DATA.yesterday}</div></div></section>`;
+
+  h += `<section><h2>本周链条一览</h2><div class="chain">`;
+  DATA.chain.layers.forEach((l,i) => {
+    const now = (i+1) === DATA.chain.day ? ' class="now"' : "";
+    h += `<div${now}><span>${i+1}</span>${l}</div>`;
+  });
+  h += `</div></section>`;
+
+  document.getElementById("body").innerHTML = h;
+}
+render();
+</script>
+</body>
+</html>
