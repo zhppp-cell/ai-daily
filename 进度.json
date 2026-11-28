@@ -1,11 +1,11 @@
 {
-  "updated": "2026-11-27",
+  "updated": "2026-11-28",
   "daily_budget_minutes": 30,
   "goal": "系统工程师视角：横向拉宽，每层都懂到「能判断、能提问、能验收」的程度，不追求自己推导和实现",
   "current": {
     "chain_index": 9,
     "chain_name": "程序链（Codesys/ST）",
-    "day": 1,
+    "day": 2,
     "layers": [
       "第1层：系统指令/上位机或PLC输入层——弄清给定的是位置/速度/力矩指令、目标值与轨迹形式，以及来自哪个接口（EtherCAT/脉冲/模拟量）。",
       "第2层：运动控制功能块与轴配置层——理解Codesys中轴对象、单位换算、软限位、回零模式与PLCopen功能块（MC_MoveAbsolute等）如何把指令翻译成轴动作。",

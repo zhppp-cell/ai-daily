@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>系统训练台</title>
+<style>
+  :root{
+    --bg:#ffffff; --text:#1a1a1a; --muted:#8a8a8a; --faint:#c2c2c2;
+    --line:#ededed; --link:#1a56db; --mark:#f2f6ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111214; --text:#e8e8e8; --muted:#8f9096; --faint:#4a4b50;
+      --line:#26272b; --link:#7aa2f7; --mark:#1b2333;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;font-size:15px;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:54px 22px 80px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  .sub{color:var(--muted);font-size:13px;margin-top:5px}
+  .stage{font-size:13px;color:var(--muted);margin-top:16px;padding:9px 13px;background:var(--mark);border-radius:8px}
+  .stage b{color:var(--text)}
+  section{margin-top:42px}
+  h2{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.12em;margin:0;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .block{padding:16px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .t{font-size:16px;font-weight:600;line-height:1.55}
+  .t a{color:var(--text);text-decoration:none}
+  .t a:hover{color:var(--link);text-decoration:underline;text-underline-offset:3px}
+  .lbl{color:var(--faint);font-size:11.5px;letter-spacing:.08em;margin-top:14px}
+  .txt{color:var(--muted);font-size:14px;margin-top:3px}
+  .txt b, .txt strong{color:var(--text);font-weight:600}
+  ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  li{margin:2px 0}
+  .goal{margin-top:12px;font-size:14px;color:var(--text);background:var(--mark);border-radius:8px;padding:10px 13px}
+  .why{font-size:14px;color:var(--muted);margin-top:6px}
+  .why b{color:var(--text)}
+  .chain{margin-top:6px}
+  .chain div{font-size:13.5px;color:var(--muted);padding:5px 0}
+  .chain div.now{color:var(--text);font-weight:600}
+  .chain span{display:inline-block;width:18px;color:var(--faint);font-variant-numeric:tabular-nums}
+  footer{margin-top:52px;color:var(--faint);font-size:12.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>系统训练台</h1>
+    <div class="sub" id="date"></div>
+    <div class="stage" id="stage"></div>
+  </header>
+  <div id="body"></div>
+  <footer>
+    每天 30 分钟：任务 20 分钟 + AI 进展 3 分钟 + 回顾<br>
+    <a href="./history.html">往期任务 →</a> · <a href="./合集.md">全部合集 →</a> · 云端自动更新 · 做完把你的一句话判断发给我
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  "date": "2026-11-28 周六",
+  "chain": {
+    "name": "程序链（Codesys/ST）",
+    "day": 1,
+    "layers": [
+      "第1层：系统指令/上位机或PLC输入层——弄清给定的是位置/速度/力矩指令、目标值与轨迹形式，以及来自哪个接口（EtherCAT/脉冲/模拟量）。",
+      "第2层：运动控制功能块与轴配置层——理解Codesys中轴对象、单位换算、软限位、回零模式与PLCopen功能块（MC_MoveAbsolute等）如何把指令翻译成轴动作。",
+      "第3层：伺服驱动与FOC闭环层——知道驱动器接收位置/速度指令后经电流环、速度环、位置环及FOC换相驱动无刷电机，能判断增益、限幅、使能状态是否合理。",
+      "第4层：机械传动与调台执行层——明白电机经丝杠/蜗轮/转台减速机构转换为实际位移或角度，关注背隙、刚度、摩擦与传动比对最终定位的影响。",
+      "第5层：反馈与测量层——理解编码器/光栅尺分辨率、反馈位置读取与采样周期，能判断反馈链路是否正常、分辨率是否匹配最小步进要求。",
+      "第6层：测试采集与数据处理层——明确定位精度、重复定位精度、最小步进、模态与热耗数据在程序中如何触发采集、同步与记录，能提问采样率、触发条件与数据对齐。",
+      "第7层：指标判定与验收层——把程序链结果对照指标（定位/重复定位精度、最小步进、稳定性）做判断，能提出验收标准、异常定位方向与需系统工程师确认的边界。"
+    ]
+  },
+  "task": {
+    "title": "程序链第1层：指令从哪来、是什么形式",
+    "problem": "调台动一下，指令可能是位置/速度/力矩，走EtherCAT/脉冲/模拟量。分不清就分不清误差来自指令、伺服还是机械。今天用20分钟弄清你的调台到底收什么指令、从哪个口进。",
+    "metrics": [
+      "能说出调台当前指令类型：位置/速度/力矩，及目标值单位（mm/deg、mm/s、N·m）",
+      "能指出接口：EtherCAT从站/脉冲+方向/±10V模拟量，并找到对应配置页或接线",
+      "能判断轨迹形式：点到点、梯形/ S曲线、是否带前馈，和最小步进测试是否一致",
+      "能对照一次重复定位精度数据，说出指令分辨率是否够解释实测跳动"
+    ],
+    "fail": [
+      "指令是位置但实测有爬行 → 先怀疑速度前馈/加减速设置，不是机械",
+      "最小步进走不动但指令已发 → 先怀疑脉冲当量或EtherCAT周期/分辨率",
+      "模态测试激励与运行指令混用 → 先怀疑激励源是否绕过正常指令链",
+      "热耗变化后重复精度漂 → 先怀疑指令目标值是否随温度补偿被改写"
+    ],
+    "ask": [
+      "这台调台的指令接口和周期是多少？位置指令分辨率对应多少微米/角秒？",
+      "轨迹规划在PLC还是驱动器？加减速、前馈参数在哪一层设？",
+      "最小步进测试时，指令步长和实际分辨率怎么对应？"
+    ],
+    "act": "打开Codesys工程或驱动器配置页，找到调台轴：记录指令类型、接口、单位、周期；再翻最近一次重复定位精度或最小步进数据，写一句“指令分辨率=___，实测跳动=___，是否匹配”。拍照存笔记。",
+    "goal": "能指着配置说出：指令类型、接口、单位、周期，并判断它能否解释一次实测精度数据。"
+  },
+  "ai": [
+    {
+      "t": "Google DeepCrossAttention：模型质量相当、速度最高提升3倍",
+      "url": "https://research.google/blog/supercharging-transformer-residual-connections/",
+      "d": "Google 提出 DeepCrossAttention，通过改进 Transformer 残差连接结构，在模型质量相当的情况下实现最高 3 倍训练或推理加速。",
+      "why": "这属于「模型能力/效率边界」变化：训练与推理成本下降会推动更多 AI 能力嵌入测试工具链（如模态数据自动分析、测试报告生成、异常定位）。你不需要推导注意力公式，但要知道「同等效果更便宜」意味着以后选型时可以直接问供应商：你们的模型或检测算法是否用了这类高效结构、在你们的硬件上延迟和吞吐是多少。"
+    },
+    {
+      "t": "Michael Nielsen 下架其神经网络在线书籍",
+      "url": "https://neuralnetworksanddeeplearning.com/",
+      "d": "经典免费教材《Neural Networks and Deep Learning》被作者下架，反映 AI 入门知识供给和作者对内容维护意愿的变化。",
+      "why": "这提醒你「知识供应链」也在变：你按「能判断、能提问、能验收」的横向宽度学习时，依赖的公开教材可能随时消失。对测试工程师的实操意义是，把关键概念（定位精度与重复定位精度的区别、模态测试关注什么、伺服环带宽影响什么）沉淀成自己的验收清单和提问模板，而不是收藏链接；同时优先选有版本、可离线保存的资料。"
+    }
+  ],
+  "yesterday": "还没有反馈。做完今天这一步，把一句话判断发给我或写进 反馈.md，明天会显示在这里。"
+};
+
+function render(){
+  document.getElementById("date").textContent = DATA.date;
+  document.getElementById("stage").innerHTML =
+    `本周链条：<b>${DATA.chain.name}</b> · 第 <b>${DATA.chain.day}</b> / ${DATA.chain.layers.length} 层`;
+
+  let h = "";
+
+  h += `<section><h2>今天的任务 · 20 分钟</h2>`;
+  h += `<div class="block"><div class="t">${DATA.task.title}</div>
+    <div class="lbl">解决什么问题</div><div class="txt">${DATA.task.problem}</div>
+    <div class="lbl">关键指标</div><ul>${DATA.task.metrics.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">典型失效 → 先怀疑哪里</div><ul>${DATA.task.fail.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">该问专家什么</div><ul>${DATA.task.ask.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="lbl">用你手上的东西验证</div><div class="txt">${DATA.task.act}</div>
+    <div class="goal"><b>过关标准：</b>${DATA.task.goal}</div>
+  </div></section>`;
+
+  h += `<section><h2>AI 进展 · 3 分钟</h2>`;
+  DATA.ai.forEach(i => {
+    h += `<div class="block">
+      <div class="t"><a href="${i.url}" target="_blank" rel="noopener">${i.t}</a></div>
+      <div class="txt">${i.d}</div>
+      <div class="why">${i.why}</div>
+    </div>`;
+  });
+  h += `</section>`;
+
+  h += `<section><h2>昨天的一句话</h2><div class="block"><div class="txt">${DATA.yesterday}</div></div></section>`;
+
+  h += `<section><h2>本周链条一览</h2><div class="chain">`;
+  DATA.chain.layers.forEach((l,i) => {
+    const now = (i+1) === DATA.chain.day ? ' class="now"' : "";
+    h += `<div${now}><span>${i+1}</span>${l}</div>`;
+  });
+  h += `</div></section>`;
+
+  document.getElementById("body").innerHTML = h;
+}
+render();
+</script>
+</body>
+</html>
